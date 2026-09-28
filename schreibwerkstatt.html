@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="de-CH">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Schreibwerkstatt</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Caveat:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#EEF2F9; --paper:#FFFFFF; --ink:#1E2A5A; --ink-soft:#56618C; --line:#D5DDEE;
+  --margin:#E8A1AC; --pen:#C8203A; --hl-yellow:#FFE45C; --hl-pink:#FFB2CC; --hl-blue:#9ED2FF; --hl-green:#B4E9A9; --focus:#2F5BD3;
+  --chip:#E4E9F6; --ok:#1E7F4F;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#10152A; --paper:#182040; --ink:#E6EBFA; --ink-soft:#A3AED3; --line:#2A3560;
+    --margin:#7D3A4B; --pen:#FF7A8E; --hl-yellow:rgba(255,220,70,.42); --hl-pink:rgba(255,120,170,.42); --hl-blue:rgba(110,180,255,.45); --hl-green:rgba(120,220,110,.38);
+    --focus:#8FB0FF; --chip:#243058; --ok:#5FD39A;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#10152A; --paper:#182040; --ink:#E6EBFA; --ink-soft:#A3AED3; --line:#2A3560;
+  --margin:#7D3A4B; --pen:#FF7A8E; --hl-yellow:rgba(255,220,70,.42); --hl-pink:rgba(255,120,170,.42); --hl-blue:rgba(110,180,255,.45); --hl-green:rgba(120,220,110,.38);
+  --focus:#8FB0FF; --chip:#243058; --ok:#5FD39A;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",sans-serif;font-size:17px;line-height:1.55;-webkit-text-size-adjust:100%}
+.wrap{max-width:1020px;margin:0 auto;padding:1.5rem 1.1rem 3rem}
+button,input,textarea{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--focus);outline-offset:2px;border-radius:6px}
+
+.top{display:flex;justify-content:space-between;align-items:flex-end;gap:1rem;flex-wrap:wrap;margin-bottom:1.4rem}
+h1{font-size:clamp(2.1rem,6vw,3.1rem);line-height:1.05;margin:0 0 .35rem;letter-spacing:-.01em}
+.lead{margin:0;color:var(--ink-soft);max-width:34em}
+.hand{font-family:Caveat,"Bradley Hand","Segoe Print",cursive;color:var(--pen);font-size:1.75rem;line-height:1.05;transform:rotate(-4deg);margin:0 .5rem .2rem 0;font-weight:700}
+
+.steps ol{list-style:none;display:flex;gap:.4rem;padding:0;margin:0 0 1.4rem;overflow-x:auto}
+.steps button{display:flex;align-items:center;gap:.5rem;border:0;background:transparent;padding:.45rem .8rem .45rem .45rem;border-radius:999px;cursor:pointer;color:var(--ink-soft);white-space:nowrap}
+.steps .n{display:inline-grid;place-items:center;width:1.8rem;height:1.8rem;border-radius:50%;border:2px solid currentColor;font-weight:700;font-size:.9rem}
+.steps button[aria-current="step"]{color:var(--ink);background:var(--paper)}
+.steps button[aria-current="step"] .n{background:var(--ink);border-color:var(--ink);color:var(--paper)}
+.steps button:disabled{opacity:.4;cursor:not-allowed}
+
+h2{font-size:1.35rem;margin:0 0 .8rem}
+h3{font-size:1.05rem;margin:0 0 .6rem}
+.muted{color:var(--ink-soft)}
+.panel{background:var(--paper);border-radius:14px;padding:1.2rem}
+
+.types{display:flex;flex-wrap:wrap;gap:.5rem;margin:0 0 1rem;border:0;padding:0}
+.types legend{font-weight:700;margin-bottom:.5rem}
+.types label{position:relative}
+.types input{position:absolute;opacity:0;inset:0}
+.types span{display:block;padding:.5rem 1rem;border-radius:999px;background:var(--paper);border:2px solid var(--line);cursor:pointer}
+.types input:checked + span{border-color:var(--ink);background:var(--ink);color:var(--paper);font-weight:700}
+.types input:focus-visible + span{outline:3px solid var(--focus);outline-offset:2px}
+
+/* Editor: Textfeld mit Markierungen dahinter */
+.editor{position:relative;background-color:var(--paper);background-image:linear-gradient(to bottom,transparent calc(100% - 1px),var(--line) calc(100% - 1px));background-size:100% 2.2rem;background-position:0 .6rem;border-left:3px solid var(--margin);border-radius:4px 14px 14px 4px}
+.editor:focus-within{box-shadow:0 0 0 3px var(--focus)}
+.editor .bd,.editor textarea{margin:0;border:0;padding:.6rem 1.2rem 1.4rem 1.4rem;font-family:inherit;font-size:1.05rem;line-height:2.2rem;letter-spacing:normal;word-spacing:normal;white-space:pre-wrap;overflow-wrap:break-word;word-wrap:break-word;width:100%}
+.editor .bd{position:absolute;inset:0;color:transparent;pointer-events:none;overflow:hidden}
+.editor textarea{position:relative;display:block;background:transparent;color:var(--ink);resize:none;overflow:hidden;min-height:22rem;outline:none;-webkit-appearance:none;appearance:none;border-radius:0}
+.bd mark{color:transparent;border-radius:3px}
+.m-start{background:linear-gradient(transparent 30%,var(--hl-yellow) 30%,var(--hl-yellow) 86%,transparent 86%)}
+.m-word{background:linear-gradient(transparent 30%,var(--hl-pink) 30%,var(--hl-pink) 86%,transparent 86%)}
+.m-case{background:linear-gradient(transparent 30%,var(--hl-blue) 30%,var(--hl-blue) 86%,transparent 86%)}
+[data-mode="gk"] .stil-only,[data-mode="komma"] .stil-only,[data-mode="stil"] .gk-only,[data-mode="komma"] .gk-only,[data-mode="stil"] .komma-only,[data-mode="gk"] .komma-only{display:none!important}
+.m-comma{background:linear-gradient(transparent 22%,var(--hl-green) 22%,var(--hl-green) 90%,transparent 90%)}
+.bd span.m-comma.sel{box-shadow:none;background:linear-gradient(transparent 22%,var(--hl-green) 22%,var(--hl-green) 90%,var(--ink) 90%,var(--ink) 97%,transparent 97%)}
+.note .rule{margin:0 0 .8rem}
+.note .ex{display:block;font-style:italic;color:var(--ink-soft);margin-top:.2rem}
+.m-long{text-decoration:underline wavy var(--pen);text-decoration-thickness:1.5px;text-underline-offset:6px}
+.bd .sel{box-shadow:0 0 0 2px var(--ink)}
+.bd span.sel{box-shadow:none;text-decoration-thickness:3px}
+
+.meta{display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap;margin-top:.9rem}
+.err{color:var(--pen);font-weight:700;margin:.6rem 0 0}
+.btn{border:0;border-radius:10px;padding:.7rem 1.2rem;font-weight:700;cursor:pointer;background:var(--ink);color:var(--paper)}
+.btn.ghost{background:transparent;color:var(--ink);box-shadow:inset 0 0 0 2px var(--line)}
+.btn.warn{background:transparent;color:var(--pen);box-shadow:inset 0 0 0 2px var(--pen)}
+.btn.small{padding:.4rem .8rem;font-size:.92rem}
+.actions{display:flex;flex-wrap:wrap;gap:.6rem;margin-top:1.2rem}
+
+.stats{display:flex;flex-wrap:wrap;gap:.4rem 1.4rem;margin:0 0 .8rem;padding:0;list-style:none;color:var(--ink-soft)}
+.stats b{color:var(--ink);font-size:1.15rem}
+.legend{display:flex;flex-wrap:wrap;gap:.5rem 1.2rem;margin:0 0 1rem;font-size:.95rem}
+.legend .sw{padding:0 2px}
+.hint{background:var(--paper);border-left:4px solid var(--pen);padding:.6rem .9rem;border-radius:0 10px 10px 0;margin:0 0 1rem}
+.work{display:grid;grid-template-columns:minmax(0,1fr);gap:1.2rem;align-items:start}
+.work.on{grid-template-columns:minmax(0,1fr) 270px}
+.note{position:sticky;top:calc(env(safe-area-inset-top,0px) + 1rem);background:var(--paper);border-radius:14px;padding:1rem 1.1rem}
+.note .t{font-family:Caveat,"Bradley Hand","Segoe Print",cursive;color:var(--pen);font-size:1.9rem;line-height:1.1;margin:0 0 .4rem;font-weight:700}
+.note p{margin:0 0 .6rem}
+.note .nav{display:flex;gap:.4rem;margin-top:.8rem;flex-wrap:wrap}
+.chips{display:flex;flex-wrap:wrap;gap:.35rem;padding:0;margin:0;list-style:none}
+.chips li{background:var(--chip);border-radius:999px;padding:.15rem .7rem;font-size:.95rem}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:1.2rem;margin-top:1.2rem}
+.bars{list-style:none;margin:0;padding:0}
+.bars li{display:grid;grid-template-columns:7.5rem 1fr 2rem;gap:.6rem;align-items:center;margin-bottom:.35rem}
+.bars .bar{height:.7rem;border-radius:999px;background:var(--chip);overflow:hidden}
+.bars .bar i{display:block;height:100%;background:var(--ink-soft)}
+.bars .hot .bar i{background:var(--pen)}
+.bars .w{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+.check{list-style:none;margin:0;padding:0}
+.check li{margin-bottom:.5rem}
+.check label{display:grid;grid-template-columns:1.8rem 1fr;gap:.7rem;align-items:start;background:var(--paper);border-radius:12px;padding:.8rem 1rem;cursor:pointer}
+.check input{width:1.4rem;height:1.4rem;margin:.15rem 0 0;accent-color:var(--ok)}
+.check small{display:block;color:var(--ink-soft);font-size:.92rem}
+.check input:checked ~ span b{text-decoration:line-through;text-decoration-color:var(--ok);text-decoration-thickness:2px}
+.progress{font-weight:700;color:var(--ok);margin:.2rem 0 1rem}
+label.field{display:block;font-weight:700;margin:1.2rem 0 .4rem}
+.field-in{width:100%;border:2px solid var(--line);border-radius:10px;padding:.6rem .8rem;background:var(--paper)}
+textarea.field-in{min-height:7rem;resize:vertical}
+
+.protocol{white-space:pre-wrap;background:var(--paper);border-radius:14px;padding:1.2rem 1.3rem;margin:1rem 0 0;font-family:inherit;font-size:1rem;line-height:1.6;overflow-x:auto}
+.status{min-height:1.5em;margin:.6rem 0 0;color:var(--ok);font-weight:700}
+
+@media (max-width:760px){
+  .work.on,.two{grid-template-columns:1fr}
+  .note{top:auto;bottom:calc(env(safe-area-inset-bottom,0px) + .5rem);box-shadow:0 -4px 18px rgba(20,30,70,.18)}
+  .hand{font-size:1.5rem}
+}
+@media print{
+  body{background:#fff;color:#000}
+  .top,.steps,.no-print,main>section:not(#s3){display:none!important}
+  .protocol{padding:0}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1>Schreibwerkstatt</h1>
+      <p class="lead">Überarbeite deinen Aufsatz, bevor du ihn abgibst. Dein Text bleibt auf diesem Gerät.</p>
+    </div>
+    <p class="hand" aria-hidden="true">Erst überarbeiten,<br>dann abgeben!</p>
+  </header>
+
+  <nav class="steps" aria-label="Arbeitsschritte">
+    <ol>
+      <li><button data-step="1"><span class="n">1</span>Wortwahl</button></li>
+      <li><button data-step="2"><span class="n">2</span>Gross/Klein</button></li>
+      <li><button data-step="3"><span class="n">3</span>Kommas</button></li>
+      <li><button data-step="4"><span class="n">4</span>Checkliste</button></li>
+      <li><button data-step="5"><span class="n">5</span>Protokoll</button></li>
+    </ol>
+  </nav>
+
+  <main>
+    <section id="s1">
+      <fieldset class="types" id="types">
+        <legend>Was für einen Text schreibst du?</legend>
+      </fieldset>
+
+      <div id="extras" hidden>
+        <ul class="stats" id="stats"></ul>
+        <div class="legend">
+          <span class="stil-only"><mark class="m-start sw">gelb</mark> gleiche Satzanfänge</span>
+          <span class="stil-only"><mark class="m-word sw">rosa</mark> Wortwahl</span>
+          <span class="stil-only"><span class="m-long">Wellenlinie</span> sehr langer Satz</span>
+          <span class="gk-only"><mark class="m-case sw">blau</mark> Gross- oder Kleinschreibung prüfen</span>
+          <span class="komma-only"><mark class="m-comma sw">grün</mark> In diesem Satz fehlt wahrscheinlich ein Komma</span>
+        </div>
+        <div id="extraHint"></div>
+      </div>
+
+      <div class="work" id="work">
+        <div>
+          <label for="txt" class="field" style="margin-top:0">Dein Text</label>
+          <div class="editor">
+            <div class="bd" id="bd" aria-hidden="true"></div>
+            <textarea id="txt" spellcheck="true" placeholder="Schreibe hier oder füge deinen Text ein. Neue Zeile = neuer Absatz."></textarea>
+          </div>
+          <div class="meta">
+            <span class="muted" id="wc">0 Wörter</span>
+            <button class="btn" id="checkBtn">Text prüfen</button>
+            <span class="muted" id="liveInfo" hidden>Die Markierungen passen sich an, während du schreibst.</span>
+            <button class="btn warn small" id="newBtn" hidden>Neuen Text beginnen</button>
+          </div>
+          <p class="err" id="err" hidden></p>
+        </div>
+        <aside class="note" id="note" aria-live="polite" hidden></aside>
+      </div>
+
+      <div id="panels" hidden>
+        <div class="panel gk-only" style="margin-top:1.2rem">
+          <h3>Gross oder klein?</h3>
+          <div id="gkSum"></div>
+        </div>
+        <div class="panel komma-only" style="margin-top:1.2rem">
+          <h3>Welche Kommaregeln betroffen sind</h3>
+          <div id="kSum"></div>
+        </div>
+        <div class="two stil-only">
+          <div class="panel">
+            <h3>So beginnen deine Sätze</h3>
+            <ul class="bars" id="starts"></ul>
+          </div>
+          <div class="panel">
+            <h3>Diese Wörter kommen oft vor</h3>
+            <div id="freq"></div>
+          </div>
+        </div>
+        <div class="actions stil-only">
+          <button class="btn" data-go="2">Weiter: Gross- und Kleinschreibung</button>
+        </div>
+        <div class="actions gk-only">
+          <button class="btn ghost" data-go="1">Zurück zur Wortwahl</button>
+          <button class="btn" data-go="3">Weiter: Kommas</button>
+        </div>
+        <div class="actions komma-only">
+          <button class="btn ghost" data-go="2">Zurück zu Gross/Klein</button>
+          <button class="btn" data-go="4">Weiter zur Checkliste</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="s2" hidden>
+      <h2 id="checkTitle">Checkliste</h2>
+      <p class="muted" style="margin-top:-.4rem">Hake nur ab, was du wirklich geprüft hast. Wenn etwas fehlt, geh zurück und ändere den Text.</p>
+      <p class="progress" id="progress"></p>
+      <ul class="check" id="checklist"></ul>
+      <label class="field" for="changes">Das habe ich überarbeitet</label>
+      <textarea id="changes" class="field-in" placeholder="Zum Beispiel: Drei Satzanfänge mit „Dann“ umgestellt, den Anfang mitten ins Geschehen gesetzt."></textarea>
+      <div class="actions">
+        <button class="btn ghost" data-go="3">Zurück zum Text</button>
+        <button class="btn" data-go="5">Protokoll erstellen</button>
+      </div>
+    </section>
+
+    <section id="s3" hidden>
+      <h2>Dein Überarbeitungsprotokoll</h2>
+      <p class="muted no-print" style="margin-top:-.4rem">Kopiere zuerst deinen verbesserten Text zurück in Word. Danach kopierst oder druckst du das Protokoll.</p>
+      <div class="no-print">
+        <label class="field" for="name" style="margin-top:0">Dein Name</label>
+        <input id="name" class="field-in" autocomplete="name">
+      </div>
+      <pre class="protocol" id="protocol"></pre>
+      <div class="actions no-print">
+        <button class="btn" id="copyTextBtn">Verbesserten Text kopieren (für Word)</button>
+        <button class="btn ghost" id="copyBtn">Protokoll kopieren</button>
+        <button class="btn ghost" id="printBtn">Drucken</button>
+        <button class="btn warn" id="resetBtn">Neuen Text beginnen</button>
+      </div>
+      <p class="status no-print" id="status" aria-live="polite"></p>
+    </section>
+  </main>
+</div>
+
+<script>
+(function(){
+const KEY='schreibwerkstatt-v2';
+const TYPES={
+  erzaehlung:{name:'Erzählung',check:[
+    ['Der Anfang weckt sofort Interesse.','Zum Beispiel mitten ins Geschehen springen, mit wörtlicher Rede, einem Geräusch, einem Gedanken oder einer rätselhaften Aussage beginnen. Nicht: „Es war einmal an einem Montag …“'],
+    ['Wer, wo und wann wird nach und nach klar.','Das muss nicht alles im ersten Satz stehen.'],
+    ['Die Spannung steigt bis zum Höhepunkt.',''],
+    ['Der Höhepunkt ist ausführlich erzählt.','Gedanken, Gefühle und wörtliche Rede machen ihn lebendig. Hier darf die Zeit langsamer laufen.'],
+    ['Ich bleibe in der Vergangenheit (Präteritum).','Er ging, sie rief, nicht: er geht, sie ruft.'],
+    ['Neue Szene oder neuer Ort bedeutet neuer Absatz.',''],
+    ['Der Schluss rundet die Geschichte ab, oder das Ende bleibt bewusst offen.','Ein offenes Ende ist gewollt, wenn es die Leser zum Weiterdenken bringt, nicht weil die Zeit knapp wurde.'],
+    ['Die Überschrift macht neugierig, verrät aber nicht das Ende.','']]},
+  zusammenfassung:{name:'Zusammenfassung',check:[
+    ['Der rote Faden ist ersichtlich.','Die wichtigsten Schritte stehen in der richtigen Reihenfolge und sind verbunden: daraufhin, deshalb, schliesslich. Nebensächliches lässt du weg.'],
+    ['Ich schreibe im Präsens.','Was vorher geschah, steht im Perfekt: Nachdem er das Geld gefunden hat, …'],
+    ['Es gibt keine direkte Rede.','Wichtige Aussagen gibst du indirekt wieder: Sie erklärt, dass sie nicht mitkommt.'],
+    ['Ich gebe keine eigene Interpretation.','Nur was im Text steht. Keine Vermutungen, Wertungen oder „ich finde“.']]},
+  stellungnahme:{name:'Stellungnahme',check:[
+    ['Am Anfang nenne ich das Thema und meine Meinung klar.','Nach der Einleitung wissen die Leser, worum es geht und wo du stehst.'],
+    ['Ich habe mindestens zwei Argumente.',''],
+    ['Jedes Argument hat Behauptung, Begründung und Beispiel.','Zum Beispiel: Handys sollten erlaubt sein (Behauptung), weil man damit schnell etwas nachschlagen kann (Begründung). Im Geschichtsunterricht … (Beispiel).'],
+    ['Das stärkste Argument kommt zuletzt.',''],
+    ['Jedes Argument hat einen eigenen Absatz.',''],
+    ['Überleitungen verbinden die Argumente.','Zudem, ausserdem, ein weiterer Grund ist, besonders wichtig ist …'],
+    ['Wenn es passt: Ein Gegenargument erwähne ich kurz und entkräfte es.','Zwar sagen manche …, doch …'],
+    ['Im Schluss bekräftige ich meine Meinung.','Keine neuen Argumente mehr, dafür eine Zusammenfassung oder ein Wunsch.'],
+    ['Ich schreibe sachlich und im Präsens.','Keine Umgangssprache und keine Angriffe auf Personen.']]},
+  eroerterung:{name:'Erörterung',check:[
+    ['Die Einleitung führt zum Thema hin und nennt die Frage.',''],
+    ['Jedes Argument hat Behauptung, Begründung und Beispiel.',''],
+    ['Ich habe mehrere Argumente, das stärkste kommt zuletzt.',''],
+    ['Jedes Argument hat einen eigenen Absatz.',''],
+    ['Überleitungen verbinden die Argumente.','Zudem, ausserdem, ein weiterer Grund ist, dagegen spricht …'],
+    ['Im Schluss beziehe ich begründet Stellung.',''],
+    ['Ich schreibe im Präsens.','']]}
+};
+const COMMON=[
+  ['Ich habe alle Markierungen angeschaut.','Nicht jede Markierung ist ein Fehler, aber jede ist eine Frage wert.'],
+  ['Ich habe die Rechtschreibung geprüft.','Besonders: Doppelkonsonanten, das/dass, Gross- und Kleinschreibung, Kommas.']
+];
+const WORDS=[
+  {re:/^(war|waren|warst|wart|hatte|hatten|hattest|ging|gingen|kam|kamen|sah|sahen|sagte|sagten|fragte|fragten|machte|machten|wollte|wollten|konnte|konnten|musste|mussten|sollte|sollten|durfte|durften|wurde|wurden|gab|gaben|nahm|nahmen|fand|fanden|rief|riefen|lief|liefen|stand|standen|sass|sassen|wusste|wussten|dachte|dachten|brachte|brachten|fiel|fielen|blieb|blieben|liess|liessen|begann|begannen|schrieb|schrieben|erzählte|erzählten|antwortete|antworteten|merkte|merkten|traf|trafen|fuhr|fuhren|sprach|sprachen)$/i,label:'Zeitform?',tip:'Eine Zusammenfassung steht im Präsens. Dieses Verb steht in der Vergangenheit: war wird zu ist, ging zu geht, sagte zu sagt.',alt:[],only:'zusammenfassung'},
+  {re:/^(ge)?mach(e|en|st|t|te|ten|test|tet)?$/i,label:'machen',tip:'„Machen“ passt fast überall, sagt aber wenig. Welches Verb trifft genau, was passiert?',alt:['erledigen','anfertigen','bauen','unternehmen','zubereiten','verursachen']},
+  {re:/^(ge)?sag(e|en|st|t|te|ten|test|tet)?$/i,label:'sagen',tip:'Zeig, wie etwas gesagt wird.',alt:['rufen','flüstern','antworten','erklären','murmeln','fragen','behaupten']},
+  {re:/^(geh|gehe|gehen|gehst|geht|ging|gingst|gingen|gingt|gegangen)$/i,label:'gehen',tip:'Wie genau bewegt sich die Person?',alt:['laufen','rennen','schlendern','eilen','schleichen','stapfen']},
+  {re:/^gut(e|en|er|es|em)?$/i,label:'gut',tip:'Was genau ist gut daran? Ein genaueres Wort sagt mehr.',alt:['gelungen','hilfreich','überzeugend','angenehm','lecker','zuverlässig']},
+  {re:/^schön(e|en|er|es|em)?$/i,label:'schön',tip:'Was macht es schön? Beschreibe es genauer.',alt:['prächtig','malerisch','gemütlich','eindrücklich','herrlich']},
+  {re:/^(toll|tolle|tollen|toller|tolles|super|cool|mega|krass|geil)$/i,label:'Umgangssprache',tip:'Das klingt nach Gespräch, nicht nach Aufsatz.',alt:['beeindruckend','grossartig','spannend','erstaunlich']},
+  {re:/^sehr$/i,label:'sehr',tip:'Oft kann man „sehr“ streichen oder ein stärkeres Wort wählen.',alt:['riesig statt sehr gross','eiskalt statt sehr kalt','äusserst','besonders']},
+  {re:/^(sache|sachen|ding|dinge|dingen)$/i,label:'Sache / Ding',tip:'Nenne den genauen Begriff. Was ist gemeint?',alt:[]},
+  {re:/^(bekomm|bekomme|bekommen|bekommst|bekommt|bekam|bekamen|bekamst|krieg|kriege|kriegen|kriegst|kriegt|kriegte|kriegten|gekriegt)$/i,label:'bekommen / kriegen',tip:'Es gibt genauere Verben.',alt:['erhalten','gewinnen','geschenkt bekommen','empfangen']},
+  {re:/^(eigentlich|halt|irgendwie|ziemlich|total|echt|quasi)$/i,label:'Füllwort',tip:'Füllwörter machen Sätze länger, aber nicht besser. Lies den Satz ohne dieses Wort.',alt:[]},
+  {re:/^(?:(?:schrecklich|furchtbar|schlimm)(?:e|en|er|es|em)?|leider|glücklicherweise)$/i,label:'Wertung',tip:'Eine Zusammenfassung gibt wieder, was im Text steht, ohne es zu bewerten.',alt:[],only:'zusammenfassung'},
+  {re:/^(wahrscheinlich|vermutlich|vielleicht|offenbar|bestimmt|eindeutig)$/i,label:'Eigene Deutung?',tip:'Steht das so im Text, oder ist es deine Vermutung? In eine Zusammenfassung gehört nur, was im Text steht.',alt:[],only:'zusammenfassung'},
+  {re:/^dann$/i,label:'dann',tip:'Du verwendest „dann“ oft. Zeig genauer, wie die Ereignisse zusammenhängen.',alt:['kurz darauf','anschliessend','plötzlich','nach einer Weile','im selben Moment'],dann:true}
+];
+const DULL_START=/^\s*(es war|eines tages|an einem|am (montag|dienstag|mittwoch|donnerstag|freitag|samstag|sonntag|morgen|abend|wochenende)|letzte[ns]? (woche|jahr|sommer|winter)|vor (ein paar|einigen|zwei|drei)|ich heisse|ich bin|in den ferien|als ich)\b/i;
+const STOP=new Set('nicht einen einem einer eines keine keinen keiner wieder dieser diese dieses diesem diesen schon immer hatte hatten haben waren wurde wurden werden konnte konnten musste mussten sollte sollten würde würden meine meinen meiner meinem seine seinen seiner seinem ihren ihrer ihrem ihnen unsere unser unseren durch gegen zwischen während etwas alles allen alle andere anderen weil dass damit sodass obwohl nachdem bevor wenn aber oder denn sondern mich dich euch einmal endlich wirklich unter über vorbei zurück heute gestern morgen jetzt schnell'.split(' '));
+const WRE=/[A-Za-zÀ-ÖØ-öø-ÿ]+/g;
+const $=id=>document.getElementById(id);
+const esc=s=>s.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const countWords=t=>(t.match(WRE)||[]).length;
+
+let state={type:'erzaehlung',text:'',checked:false,checks:{},changes:'',name:'',first:null,step:1};
+try{const s=JSON.parse(localStorage.getItem(KEY)||'null'); if(s&&typeof s==='object'){state=Object.assign(state,s);delete state.trace;}}catch(e){}
+if(!TYPES[state.type]) state.type='erzaehlung';
+function save(){try{localStorage.setItem(KEY,JSON.stringify(state));}catch(e){}}
+
+let A=null; // aktuelle Analyse
+let mode='stil';
+
+/* Gross- und Kleinschreibung */
+const LOWER_ONLY=new Set('und oder aber denn doch dann weil dass damit wenn als ob obwohl nachdem bevor sondern ich er es wir mit nach von zu zum zur bei beim vom in im ins an am auf aus für über unter vor hinter neben zwischen durch gegen ohne um sehr nicht auch noch schon nur immer wieder plötzlich endlich schnell langsam ganz war waren ist sind hat hatte hatten haben wird wurde wurden kann konnte muss musste will wollte ging kam sagte sah der die das den dem des ein eine einen einem einer eines'.split(' '));
+const NOUNS=new Set(('haus häuser schule schulen freund freunde freundin freundinnen mutter vater mama papa eltern bruder brüder schwester schwestern familie familien hund hunde katze katzen tag tage tagen nacht nächte woche wochen jahr jahre jahren zeit abend mittag nachmittag vormittag wald wälder baum bäume see meer strand stadt städte dorf strasse strassen auto autos velo velos bus zug bahnhof zimmer tür türen fenster tisch bett küche garten wasser geld handy computer spiel spiele ball team mannschaft lehrer lehrerin lehrerinnen klasse klassen schüler schülerin schülerinnen kind kinder mann männer frau frauen mädchen leute menschen mensch welt land ferien sommer winter herbst frühling wetter regen sonne himmel wolke wolken ende anfang glück hilfe frage fragen antwort problem probleme idee ideen hand hände kopf auge augen herz polizei polizist arzt ärztin spital hose buch bücher film filme musik lied lieder party geburtstag geschenk geschenke fest reise ausflug berg berge fluss tier tiere pferd vogel vögel stein steine licht feuer boden wand treppe keller dach minute minuten stunde stunden sekunde sekunden moment angst spass freude hunger durst lärm ruhe gefühl gefühle gedanke gedanken geschichte text texte seite seiten beispiel grund meinung').split(' '));
+const SUFFIX=/^[a-zäöü]{3,}(ung|heit|keit|schaft|nis|tion|tät|ismus)(en|s|se|ses)?$/;
+const PREPS=new Set(['beim','zum','zur','vom','im','ins','am']);
+const QUANT=new Set(['etwas','nichts','viel','wenig','allerlei','alles']);
+const NOT_NOMINAL=new Set(['andere','anderes','ersten','zweiten','dritten','letzten','nächsten']);
+const ABBR=/(?:\b(?:usw|etc|bzw|ca|nr|evtl|ggf|vgl|dr|st|hr|fr|min|max|bsp|inkl|ev)\.|\b[A-Za-zÄÖÜäöü]\.|\d\.)$/i;
+const isUp=w=>w[0]!==w[0].toLowerCase();
+const isLow=w=>w[0]!==w[0].toUpperCase();
+
+function analyzeCase(text){
+  const findings=[], wordMarks=[], sents=[];
+  const lineRe=/[^\n]+/g; let lm;
+  while((lm=lineRe.exec(text))){
+    const line=lm[0]; if(!line.trim()) continue;
+    const sRe=/[^.!?…]+(?:[.!?…]+["»«“”'’)]*|$)/g; let sm;
+    while((sm=sRe.exec(line))){
+      const raw=sm[0]; if(!raw.trim()) continue;
+      const base=lm.index+sm.index, words=[]; const wRe=new RegExp(WRE.source,'g'); let wm;
+      while((wm=wRe.exec(raw))) words.push({w:wm[0],s:base+wm.index,e:base+wm.index+wm[0].length});
+      sents.push({raw:raw.replace(/\s+$/,''),line:lm.index,words});
+    }
+  }
+  const add=(x,label,tip)=>{const i=findings.push({label,tip,alt:[],s:x.s,e:x.e})-1;wordMarks.push({s:x.s,e:x.e,i,cls:'m-case'});};
+  sents.forEach((st,si)=>{
+    const prev=si>0&&sents[si-1].line===st.line?sents[si-1].raw:'';
+    const skipStart=prev&&(/["»«“”'’)]$/.test(prev)||/(\.\.\.|…)$/.test(prev)||ABBR.test(prev));
+    st.words.forEach((x,wi)=>{
+      const w=x.w, lw=w.toLowerCase();
+      const before=text.slice(Math.max(0,x.s-3),x.s).replace(/\s+$/,'').slice(-1);
+      const quoteStart=/[„“"»«:]/.test(before);
+      const next=st.words[wi+1], prevW=st.words[wi-1];
+      if(wi===0){
+        if(isLow(w)&&!skipStart&&!/[:]/.test(before)) add(x,'Satzanfang','Am Satzanfang schreibt man gross.');
+        return;
+      }
+      if(quoteStart) return;
+      if(isUp(w)&&LOWER_ONLY.has(lw)){
+        add(x,'klein schreiben','„'+w+'“ ist kein Nomen und steht nicht am Satzanfang. Solche Wörter schreibt man klein.'); return;
+      }
+      if(!isLow(w)) return;
+      if(NOUNS.has(lw)||SUFFIX.test(lw)){
+        add(x,'Nomen','Das ist ein Nomen. Artikelprobe: Passt „der“, „die“ oder „das“ davor? Dann schreibst du es gross.'); return;
+      }
+      const nextNoun=next&&(isUp(next.w)||NOUNS.has(next.w.toLowerCase())||SUFFIX.test(next.w.toLowerCase()));
+      if(nextNoun||!prevW) return;
+      const pw=prevW.w.toLowerCase();
+      if(PREPS.has(pw)&&!(pw==='am'&&/sten$/.test(lw))&&!NOT_NOMINAL.has(lw)&&!LOWER_ONLY.has(lw)){
+        add(x,'Nominalisierung?','Nach „'+prevW.w+'“ folgt oft ein Nomen: beim Laufen, am Ende, zum Glück. Folgt kein anderes Nomen mehr, schreibst du dieses Wort gross.'); return;
+      }
+      if(QUANT.has(pw)&&/es?$/.test(lw)&&lw.length>3&&!NOT_NOMINAL.has(lw)){
+        add(x,'Nominalisierung','Nach „etwas“, „nichts“, „viel“, „wenig“ oder „alles“ wird ein Adjektiv zum Nomen: etwas Neues, nichts Gutes, alles Gute.');
+      }
+    });
+  });
+  return {findings,wordMarks,longMarks:[],counts:{kase:findings.length}};
+}
+let sel=-1;
+
+function startTip(w){
+  if(w==='dann') return 'Mit „Dann“ reihst du Ereignisse bloss aneinander. Versuch: Kurz darauf, Plötzlich, In diesem Moment, Nachdem …';
+  if(w==='und') return 'Ein Satz mit „Und“ am Anfang lässt sich oft mit dem vorherigen verbinden, oder er braucht einen neuen Einstieg.';
+  if(['ich','er','sie','es','wir','man','der','die','das'].includes(w)) return 'Stell den Satz um: Beginne mit einer Zeit- oder Ortsangabe oder einem Nebensatz. Aus „Ich rannte sofort los.“ wird „Sofort rannte ich los.“';
+  return 'Mehrere Sätze beginnen gleich. Stell einen der Sätze um, dann liest sich der Text abwechslungsreicher.';
+}
+
+function analyze(text,type){
+  const findings=[], wordMarks=[], longMarks=[], sents=[];
+  let paras=0;
+  const lineRe=/[^\n]+/g; let lm;
+  while((lm=lineRe.exec(text))){
+    const line=lm[0]; if(!line.trim()) continue; paras++;
+    const sRe=/[^.!?…]+(?:[.!?…]+["»«“”'’)]*|$)/g; let sm;
+    while((sm=sRe.exec(line))){
+      const raw=sm[0]; if(!raw.trim()) continue;
+      const lead=raw.length-raw.replace(/^\s+/,'').length;
+      const trail=raw.length-raw.replace(/\s+$/,'').length;
+      const base=lm.index+sm.index;
+      const words=[]; const wRe=new RegExp(WRE.source,'g'); let wm;
+      while((wm=wRe.exec(raw))) words.push({w:wm[0],s:base+wm.index,e:base+wm.index+wm[0].length});
+      sents.push({s:base+lead,e:base+raw.length-trail,words,line:lm.index,first:words[0]?words[0].w.toLowerCase():''});
+    }
+  }
+  const startCount={}; sents.forEach(s=>{if(s.first) startCount[s.first]=(startCount[s.first]||0)+1;});
+  const flagged=new Set();
+  sents.forEach((s,i)=>{
+    if(!s.first) return;
+    if(startCount[s.first]>=3) flagged.add(i);
+    if(i>0&&sents[i-1].first===s.first&&sents[i-1].line===s.line){flagged.add(i);flagged.add(i-1);}
+  });
+  const allWords=sents.flatMap(s=>s.words.map(x=>x.w));
+  const dannCount=allWords.filter(w=>w.toLowerCase()==='dann').length;
+  const counts={start:0,word:0,long:0};
+  sents.forEach((s,si)=>{
+    s.words.forEach((x,wi)=>{
+      if(wi===0&&flagged.has(si)){
+        const i=findings.push({label:'Satzanfang „'+x.w+'“',tip:startTip(x.w.toLowerCase()),alt:[],s:x.s,e:x.e})-1;
+        wordMarks.push({s:x.s,e:x.e,i,cls:'m-start'}); counts.start++; return;
+      }
+      const hit=WORDS.find(p=>p.re.test(x.w)&&(!p.only||p.only===type)&&(!p.dann||dannCount>=3));
+      if(hit){
+        const i=findings.push({label:hit.label,tip:hit.tip,alt:hit.alt,s:x.s,e:x.e})-1;
+        wordMarks.push({s:x.s,e:x.e,i,cls:'m-word'}); counts.word++;
+      }
+    });
+    if(s.words.length>28){
+      const i=findings.push({label:'Langer Satz',tip:'Dieser Satz hat '+s.words.length+' Wörter. Prüfe, ob du ihn in zwei Sätze teilen kannst. Lies ihn laut: Musst du Luft holen?',alt:[],s:s.s,e:s.e})-1;
+      longMarks.push({s:s.s,e:s.e,i}); counts.long++;
+    }
+  });
+  const freqMap={};
+  allWords.forEach(w=>{const k=w.toLowerCase(); if(k.length>=5&&!STOP.has(k)) freqMap[k]=(freqMap[k]||0)+1;});
+  const freq=Object.entries(freqMap).filter(([,c])=>c>=4).sort((a,b)=>b[1]-a[1]).slice(0,10);
+  const starts=Object.entries(startCount).sort((a,b)=>b[1]-a[1]).slice(0,7);
+  const meinung=(text.match(/\bich\s+(finde|denke|glaube|meine)\b|\bmeiner\s+meinung\b/gi)||[]).length;
+  const quotes=(text.match(/[„“”"»«]/g)||[]).length;
+  const firstSent=sents[0]?text.slice(sents[0].s,sents[0].e):'';
+  return {findings,wordMarks,longMarks,counts,starts,freq,meinung,quotes,firstSent,
+    stats:{words:allWords.length,sents:sents.length,paras,avg:sents.length?Math.round(allWords.length/sents.length):0}};
+}
+
+function overlayHTML(text){
+  const wm=A.wordMarks;
+  function words(a,b){
+    let out='',p=a;
+    for(const m of wm){ if(m.s<a||m.e>b) continue;
+      out+=esc(text.slice(p,m.s))+'<mark class="'+m.cls+(m.i===sel?' sel':'')+'">'+esc(text.slice(m.s,m.e))+'</mark>'; p=m.e; }
+    return out+esc(text.slice(p,b));
+  }
+  let out='',p=0;
+  for(const L of A.longMarks){ out+=words(p,L.s)+'<span class="'+(L.cls||'m-long')+(L.i===sel?' sel':'')+'">'+words(L.s,L.e)+'</span>'; p=L.e; }
+  return out+words(p,text.length)+'\n\u200b';
+}
+
+/* Kommas */
+const KR={
+  hshs:{name:'Komma zwischen Hauptsatz und Hauptsatz',tip:'Hauptsätze, die nicht mit „und“ oder „oder“ verbunden sind, trennst du mit einem Komma. Das gilt auch vor „aber“, „denn“, „doch“ und „sondern“.',ex:'Tina spielt nicht Fussball, sondern geht ins Kino.'},
+  hsns:{name:'Komma zwischen Hauptsatz und Nebensatz',tip:'Wörter wie weil, dass, obwohl, wenn, bevor, nachdem, während leiten einen Nebensatz ein. Haupt- und Nebensatz trennst du mit einem Komma. Steht der Nebensatz vorne, kommt das Komma an sein Ende.',ex:'Weil wir gemeinsam Geburtstag haben, feiern wir zusammen.'},
+  aufz:{name:'Komma bei Aufzählungen',tip:'Prüfe, ob hier etwas aufgezählt wird. Zwischen die Teile einer Aufzählung gehört ein Komma, vor dem letzten Teil steht „und“.',ex:'Ich brauche Tomaten, Oliven, Brot und Salz.'},
+  anrede:{name:'Komma bei Anrede',tip:'Nach der Anrede folgt ein Komma.',ex:'Liebe Frau Schmidt, …'},
+  ausruf:{name:'Komma bei Ausrufen',tip:'Ausrufe wie Hey, Ah, Oh, Aua, Ja oder Nein trennst du mit einem Komma vom Rest des Satzes.',ex:'Aua, das tut weh!'},
+  rel:{name:'Komma bei Relativnebensätzen',tip:'Ein Relativsatz gibt Zusatzinformationen zu einem Nomen und beginnt mit der, die, das, welche … Er wird mit Komma abgetrennt, oft auch an seinem Ende.',ex:'Ich besuche die Stadt, in der ich früher gewohnt habe.'},
+  inf:{name:'Komma bei Infinitivgruppen',tip:'Eine Wortgruppe mit „zu“ + Infinitiv trennst du mit einem Komma vom Rest des Satzes, besonders nach um, ohne, statt oder einem Hinweiswort wie davon.',ex:'Um die Prüfung zu bestehen, lernte sie jeden Tag.'}
+};
+const K_PRON=new Set('ich du er sie es wir ihr man'.split(' '));
+const K_PRON2=new Set('ich du er sie es wir ihr man mir mich dir dich ihm ihn uns euch ihnen sich'.split(' '));
+const K_ART=new Set('der die das den dem des ein eine einen einem einer eines'.split(' '));
+const K_NS_START=new Set('weil obwohl nachdem bevor dass falls sobald wenn solange sofern indem ob'.split(' '));
+const K_NS_MID=new Set('weil obwohl nachdem bevor dass falls sobald ob wenn solange sofern indem sodass'.split(' '));
+const K_NS_EXCL=new Set('und oder so als aber auch sowie nur erst selbst noch gerade vor'.split(' '));
+const K_REL=new Set('der die das dem den welche welcher welches welchem welchen dessen deren'.split(' '));
+const K_PREP=new Set('in an auf mit von zu bei aus für über unter nach vor durch gegen ohne um'.split(' '));
+const K_GREET=new Set('hallo hoi hi liebe lieber liebes grüezi salü servus'.split(' '));
+const K_INTERJ=new Set('hey he ah aha oh ach au aua autsch juhu hurra oje pfui igitt ups hm wow ja nein na'.split(' '));
+const K_TITLE=new Set('herr frau dr familie onkel tante sankt st'.split(' '));
+const K_DA=new Set('davon darauf daran darüber dafür dagegen darum davor dazu'.split(' '));
+const K_INFIX=/^(ab|an|auf|aus|bei|ein|mit|nach|vor|weg|zurück|zusammen|los|fest|her|hin|heraus|herein|hinaus|vorbei|weiter|fern|kennen|stehen|fern|um|durch|über|nach)zu[a-zäöü]+(en|n)$/;
+
+function analyzeComma(text){
+  const findings=[], longMarks=[], counts={komma:0}, byRule={};
+  const lineRe=/[^\n]+/g; let lm;
+  const sents=[];
+  while((lm=lineRe.exec(text))){
+    const line=lm[0]; if(!line.trim()) continue;
+    const sRe=/[^.!?…]+(?:[.!?…]+["»«“”'’)]*|$)/g; let sm;
+    while((sm=sRe.exec(line))){
+      const raw=sm[0]; if(!raw.trim()) continue;
+      const lead=raw.length-raw.replace(/^\s+/,'').length, trail=raw.length-raw.replace(/\s+$/,'').length;
+      const base=lm.index+sm.index, words=[]; const wRe=new RegExp(WRE.source,'g'); let wm;
+      while((wm=wRe.exec(raw))) words.push({w:wm[0],lw:wm[0].toLowerCase(),s:base+wm.index,e:base+wm.index+wm[0].length});
+      sents.push({s:base+lead,e:base+raw.length-trail,words});
+    }
+  }
+  sents.forEach(st=>{
+    const W=st.words, n=W.length; if(n<2) return;
+    const seg=text.slice(st.s,st.e), hasComma=seg.includes(',');
+    const gap=i=>i>0?text.slice(W[i-1].e,W[i].s):'';
+    const noCommaBefore=i=>!gap(i).includes(',');
+    const cap=i=>W[i]&&W[i].w[0]!==W[i].lw[0];
+    const hits=new Set();
+    const isInf=k=>K_INFIX.test(W[k].lw)||(k>0&&W[k-1].lw==='zu'&&!cap(k)&&/(en|ern|eln|sein|tun)$/.test(W[k].lw));
+    const hasInf=from=>{for(let k=from;k<n;k++) if(isInf(k)) return true; return false;};
+
+    // 2 Hauptsatz + Nebensatz
+    const f=W[0].lw;
+    if(!hasComma&&n>=5&&(K_NS_START.has(f)||(f==='als'&&K_PRON.has(W[1].lw))||(f==='während'&&!K_ART.has(W[1].lw)))) hits.add('hsns');
+    for(let i=1;i<n;i++){
+      const w=W[i].lw, pv=W[i-1].lw;
+      const isNS=K_NS_MID.has(w)||(w==='während'&&W[i+1]&&!K_ART.has(W[i+1].lw));
+      if(isNS&&noCommaBefore(i)&&!K_NS_EXCL.has(pv)&&!/[„“"»«:–-]/.test(gap(i))&&i<n-1) hits.add('hsns');
+      // 1 Hauptsatz + Hauptsatz
+      if(w==='sondern'&&noCommaBefore(i)) hits.add('hshs');
+      if(['aber','doch','denn'].includes(w)&&noCommaBefore(i)&&W[i+1]&&K_PRON.has(W[i+1].lw)&&!['und','oder'].includes(pv)&&i>=2&&!(w==='denn'&&/\?/.test(seg))) hits.add('hshs');
+      // 7 Relativsatz
+      if(K_REL.has(w)&&i>=2&&cap(i-1)&&noCommaBefore(i)&&W[i+1]&&(K_PRON2.has(W[i+1].lw)||w.startsWith('welch')||w==='dessen'||w==='deren')) hits.add('rel');
+      if(K_PREP.has(w)&&i>=2&&cap(i-1)&&noCommaBefore(i)&&W[i+1]&&K_REL.has(W[i+1].lw)&&W[i+2]&&K_PRON2.has(W[i+2].lw)) hits.add('rel');
+      // 3 Aufzählung
+      if((w==='und'||w==='oder')&&i>=3&&cap(i-1)&&cap(i-2)&&cap(i+1)&&!K_TITLE.has(W[i-2].lw)&&!K_TITLE.has(W[i-1].lw)&&noCommaBefore(i-1)) hits.add('aufz');
+    }
+    // 4 Anrede
+    const greet=K_GREET.has(f)||(f==='guten'&&W[1]&&['tag','morgen','abend'].includes(W[1].lw))||(f==='sehr'&&W[1]&&W[1].lw.startsWith('geehrte'));
+    if(greet&&!hasComma&&n>=2&&!(W[1]&&/^(grüsse|grüße|gruss|gruß)$/.test(W[1].lw))&&!(K_GREET.has(f)&&n<2)) hits.add('anrede');
+    // 6 Ausruf
+    for(let i=0;i<n-1;i++){
+      if(i>0&&!/[„“"»«]/.test(gap(i))) continue;
+      if(K_INTERJ.has(W[i].lw)&&!/[,!?]/.test(gap(i+1))&&!(greet&&i===0&&W[i].lw==='hey')) hits.add('ausruf');
+    }
+    if(greet&&f==='hey'&&!hasComma) hits.add('anrede');
+    // 8 Infinitivgruppe
+    if(!hasComma){
+      for(let j=0;j<n;j++){
+        const w=W[j].lw;
+        if((['um','ohne','statt','anstatt'].includes(w)||K_DA.has(w))&&hasInf(j+1)){hits.add('inf');break;}
+        if(w==='es'&&W[j+1]&&['ist','war'].includes(W[j+1].lw)&&hasInf(j+2)){hits.add('inf');break;}
+      }
+    }
+    if(!hits.size) return;
+    const rules=[...hits];
+    rules.forEach(r=>{byRule[r]=(byRule[r]||0)+1;});
+    const i=findings.push({label:rules.length===1?KR[rules[0]].name:rules.length+' Kommaregeln',tip:'',alt:[],rules,s:st.s,e:st.e})-1;
+    longMarks.push({s:st.s,e:st.e,i,cls:'m-comma'}); counts.komma++;
+  });
+  return {findings,wordMarks:[],longMarks,counts,byRule};
+}
+
+/* Elemente */
+const txt=$('txt'), bd=$('bd');
+function fit(){txt.style.height='auto';txt.style.height=txt.scrollHeight+'px';}
+function wc(){const n=countWords(txt.value);$('wc').textContent=n+(n===1?' Wort':' Wörter');}
+
+function refresh(){
+  if(!state.checked){bd.innerHTML='';A=null;return;}
+  const base=analyze(state.text,state.type);
+  A= mode==='gk' ? Object.assign({},base,analyzeCase(state.text)) : mode==='komma' ? Object.assign({},base,analyzeComma(state.text)) : base;
+  if(sel>=A.findings.length) sel=-1;
+  bd.innerHTML=overlayHTML(state.text);
+  renderPanels();
+  if(sel<0) defaultNote();
+}
+
+function renderPanels(){
+  const s=A.stats;
+  $('stats').innerHTML='<li><b>'+s.words+'</b> Wörter</li><li><b>'+s.sents+'</b> Sätze</li><li><b>'+s.paras+'</b> '+(s.paras===1?'Absatz':'Absätze')+'</li><li><b>'+s.avg+'</b> Wörter pro Satz</li>';
+  if(mode==='komma'){
+    $('extraHint').innerHTML='<p class="hint">Grün markierte Sätze: Hier fehlt wahrscheinlich mindestens ein Komma. Tippe in den Satz, um die Regel zu sehen, und finde selbst heraus, wo das Komma hingehört.</p>';
+    const e=Object.entries(A.byRule);
+    $('kSum').innerHTML=e.length
+      ? '<ul class="chips">'+e.map(([r,n])=>'<li>'+esc(KR[r].name)+' '+n+'×</li>').join('')+'</ul><p class="muted" style="margin:.8rem 0 0">Kommas bei Einschüben und bei Aufzählungen ohne „und“ erkennt die App nicht. Prüfe diese selbst.</p>'
+      : '<p style="margin:0">Keine Sätze gefunden, in denen sicher ein Komma fehlt. Kommas bei Einschüben und manche Aufzählungen erkennt die App nicht. Prüfe diese selbst.</p>';
+    return;
+  }
+  if(mode==='gk'){
+    $('extraHint').innerHTML='<p class="hint">Zusätzlich zeigt dir das iPad selbst rot unterstrichene Wörter. Das ist seine Rechtschreibprüfung. Schau sie dir auch an.</p>';
+    const by={}; A.findings.forEach(f=>{by[f.label]=(by[f.label]||0)+1;});
+    const e=Object.entries(by);
+    $('gkSum').innerHTML=e.length
+      ? '<ul class="chips">'+e.map(([l,n])=>'<li>'+esc(l)+' '+n+'×</li>').join('')+'</ul><p class="muted" style="margin:.8rem 0 0">Die App erkennt nicht jeden Fehler. Lies deinen Text trotzdem noch einmal mit Blick auf die Nomen.</p>'
+      : '<p style="margin:0">Keine Stellen gefunden. Die App erkennt aber nicht jeden Fehler. Prüfe die Nomen trotzdem noch einmal selbst.</p>';
+    return;
+  }
+  let hint='';
+  if(state.type==='erzaehlung'&&DULL_START.test(A.firstSent)) hint+='<p class="hint">Dein Anfang erzählt eher, <i>wann</i> etwas war, als dass er neugierig macht. Probier einen Einstieg mitten ins Geschehen: „Lauf!“, schrie Lea. Oder: Das Knacken kam direkt aus dem Keller.</p>';
+  if(s.paras===1&&s.words>120) hint+='<p class="hint">Dein Text hat nur einen Absatz. Wo beginnt ein neuer Gedanke oder eine neue Szene?</p>';
+  if(state.type==='zusammenfassung'&&A.quotes>=2) hint+='<p class="hint">Dein Text enthält Anführungszeichen. Ist das direkte Rede? In einer Zusammenfassung gibst du Aussagen indirekt wieder: Sie sagt, dass …</p>';
+  if(state.type==='stellungnahme'&&A.meinung>=3) hint+='<p class="hint">Deine Meinung darf hier vorkommen. „Ich finde / ich denke“ steht aber '+A.meinung+'-mal im Text. Variiere: Meiner Ansicht nach, Ich bin überzeugt, dass …, Für mich ist klar, dass …</p>';
+  if(state.type==='eroerterung'&&A.meinung>=2) hint+='<p class="hint">„Ich finde / ich denke“ kommt '+A.meinung+'-mal vor. Variiere: Meiner Ansicht nach, Vieles spricht dafür, dass …, Überzeugend ist …</p>';
+  if(state.type==='zusammenfassung'&&A.meinung>=1) hint+='<p class="hint">„Ich finde / ich denke / meiner Meinung nach“ kommt '+A.meinung+'-mal vor. Deine eigene Meinung gehört nicht in eine Zusammenfassung.</p>';
+  $('extraHint').innerHTML=hint;
+  const max=A.starts.length?A.starts[0][1]:1;
+  $('starts').innerHTML=A.starts.map(([w,n])=>'<li class="'+(n>=3?'hot':'')+'"><span class="w">'+esc(w.charAt(0).toUpperCase()+w.slice(1))+'</span><span class="bar"><i style="width:'+Math.round(n/max*100)+'%"></i></span><span>'+n+'×</span></li>').join('');
+  $('freq').innerHTML=A.freq.length
+    ? '<p class="muted" style="margin-top:0">Prüfe, ob du einige davon ersetzen oder mit einem Pronomen umgehen kannst.</p><ul class="chips">'+A.freq.map(([w,n])=>'<li>'+esc(w)+' '+n+'×</li>').join('')+'</ul>'
+    : '<p class="muted" style="margin:0">Kein Wort kommt auffällig oft vor.</p>';
+}
+
+const navHTML='<div class="nav"><button class="btn ghost small" data-nav="-1">Vorherige Stelle</button><button class="btn small" data-nav="1">Nächste Stelle</button></div>';
+function defaultNote(){
+  const n=A.findings.length;
+  $('note').innerHTML=n
+    ? '<p class="t">'+n+' Stellen zum Anschauen</p><p>Tippe im Text auf eine Markierung oder spring mit den Knöpfen von Stelle zu Stelle. Hier erscheint dann ein Tipp dazu.</p>'+navHTML
+    : '<p class="t">Nichts markiert</p><p>Keine auffälligen Stellen gefunden. Die Checkliste lohnt sich trotzdem.</p>';
+}
+function showNote(i){
+  sel=i; const f=A.findings[i]; if(!f){sel=-1;defaultNote();bd.innerHTML=overlayHTML(state.text);return;}
+  bd.innerHTML=overlayHTML(state.text);
+  if(f.rules){ $('note').innerHTML='<p class="t">'+esc(f.label)+'</p>'+f.rules.map(r=>'<p class="rule">'+(f.rules.length>1?'<b>'+esc(KR[r].name)+'</b><br>':'')+esc(KR[r].tip)+'<span class="ex">'+esc(KR[r].ex)+'</span></p>').join('')+'<p class="muted" style="font-size:.92rem">Wo genau fehlt das Komma? Lies den Satz halblaut.</p>'+navHTML; return; }
+  $('note').innerHTML='<p class="t">'+esc(f.label)+'</p><p>'+esc(f.tip)+'</p>'+(f.alt.length?'<ul class="chips">'+f.alt.map(a=>'<li>'+esc(a)+'</li>').join('')+'</ul>':'')+navHTML;
+}
+function findingAt(pos){
+  let hit=A.wordMarks.find(m=>pos>=m.s&&pos<=m.e);
+  if(hit) return hit.i;
+  hit=A.longMarks.find(m=>pos>=m.s&&pos<=m.e);
+  return hit?hit.i:-1;
+}
+function caretNote(){
+  if(!A) return;
+  const i=findingAt(txt.selectionStart);
+  if(i>=0&&i!==sel) showNote(i);
+}
+txt.addEventListener('click',caretNote);
+txt.addEventListener('keyup',e=>{if(e.key.startsWith('Arrow')||e.key==='Home'||e.key==='End')caretNote();});
+$('note').addEventListener('click',e=>{
+  const b=e.target.closest('[data-nav]'); if(!b||!A||!A.findings.length) return;
+  const list=A.findings.map((f,i)=>({i,s:f.s})).sort((a,b)=>a.s-b.s||a.i-b.i);
+  let k=list.findIndex(x=>x.i===sel);
+  k = k<0 ? (+b.dataset.nav>0?0:list.length-1) : (k+ +b.dataset.nav+list.length)%list.length;
+  const f=A.findings[list[k].i];
+  showNote(list[k].i);
+  try{txt.focus({preventScroll:true});}catch(err){txt.focus();}
+  txt.setSelectionRange(f.s,f.e);
+  const marks=bd.querySelectorAll('.sel'); if(marks[0]) marks[0].scrollIntoView({block:'center',behavior:'smooth'});
+});
+
+txt.addEventListener('input',()=>{
+  $('newBtn').hidden=!txt.value.trim();
+  state.text=txt.value; save(); wc(); fit();
+  refresh();
+});
+
+/* Textsorte */
+const typesEl=$('types');
+Object.entries(TYPES).forEach(([k,t])=>{
+  const l=document.createElement('label');
+  l.innerHTML='<input type="radio" name="type" value="'+k+'"><span>'+t.name+'</span>';
+  typesEl.appendChild(l);
+});
+typesEl.addEventListener('change',e=>{state.type=e.target.value;save();sel=-1;refresh();});
+
+function showChecked(){
+  const on=state.checked;
+  $('extras').hidden=!on; $('panels').hidden=!on; $('note').hidden=!on;
+  $('work').classList.toggle('on',on);
+  $('checkBtn').hidden=on; $('liveInfo').hidden=!on;
+  document.querySelectorAll('.steps button').forEach(b=>{b.disabled=+b.dataset.step>1&&!on;});
+}
+$('checkBtn').addEventListener('click',()=>{
+  const n=countWords(txt.value), err=$('err');
+  if(n<30){err.textContent='Füge zuerst deinen Text ein. Die Prüfung braucht mindestens 30 Wörter.';err.hidden=false;return;}
+  err.hidden=true; state.checked=true;
+  state.first=analyze(state.text,state.type).counts; save();
+  showChecked(); sel=-1; refresh();
+  requestAnimationFrame(fit);
+});
+
+/* Checkliste */
+function items(){return TYPES[state.type].check.concat(COMMON);}
+function renderChecklist(){
+  const list=items(), done=state.checks[state.type]||[];
+  $('checkTitle').textContent='Checkliste: '+TYPES[state.type].name;
+  $('checklist').innerHTML=list.map((it,i)=>'<li><label><input type="checkbox" data-c="'+i+'"'+(done[i]?' checked':'')+'><span><b>'+esc(it[0])+'</b>'+(it[1]?'<small>'+esc(it[1])+'</small>':'')+'</span></label></li>').join('');
+  progress();
+}
+function progress(){$('progress').textContent=(state.checks[state.type]||[]).filter(Boolean).length+' von '+items().length+' geprüft';}
+$('checklist').addEventListener('change',e=>{
+  const i=+e.target.dataset.c, arr=state.checks[state.type]||[]; arr[i]=e.target.checked; state.checks[state.type]=arr; save(); progress();
+});
+$('changes').addEventListener('input',e=>{state.changes=e.target.value;save();});
+
+/* Protokoll */
+function protocolText(){
+  const r=analyze(state.text,state.type), s=r.stats, f=state.first||r.counts, l=r.counts;
+  const list=items(), done=state.checks[state.type]||[];
+  const lines=[
+    'Überarbeitungsprotokoll',
+    'Name: '+(state.name||'–'),
+    'Textsorte: '+TYPES[state.type].name,
+    'Datum: '+new Date().toLocaleDateString('de-CH'),
+    'Umfang: '+s.words+' Wörter, '+s.sents+' Sätze, '+s.paras+' '+(s.paras===1?'Absatz':'Absätze'),
+    '',
+    'Markierungen (erste Prüfung → jetzt)',
+    '  Gleiche Satzanfänge: '+f.start+' → '+l.start,
+    '  Wortwahl: '+f.word+' → '+l.word,
+    '  Sehr lange Sätze: '+f.long+' → '+l.long,
+    '  Gross-/Kleinschreibung: '+(state.firstCase==null?'nicht geprüft':state.firstCase+' → '+analyzeCase(state.text).counts.kase),
+    '  Sätze mit fehlendem Komma: '+(state.firstComma==null?'nicht geprüft':state.firstComma+' → '+analyzeComma(state.text).counts.komma),
+    '',
+    'Checkliste: '+done.filter(Boolean).length+' von '+list.length+' geprüft'
+  ];
+  list.forEach((it,i)=>lines.push('  '+(done[i]?'[x] ':'[ ] ')+it[0]));
+  lines.push('','Das habe ich überarbeitet:',state.changes.trim()||'–');
+  return lines.join('\n');
+}
+function renderProtocol(){$('protocol').textContent=protocolText();}
+$('name').addEventListener('input',e=>{state.name=e.target.value;save();renderProtocol();});
+$('copyBtn').addEventListener('click',async()=>{
+  try{await navigator.clipboard.writeText(protocolText());$('status').textContent='Kopiert. Du kannst das Protokoll jetzt einfügen.';}
+  catch(e){const r=document.createRange();r.selectNodeContents($('protocol'));const s=getSelection();s.removeAllRanges();s.addRange(r);$('status').textContent='Text markiert. Tippe auf „Kopieren“.';}
+});
+$('printBtn').addEventListener('click',()=>window.print());
+$('copyTextBtn').addEventListener('click',async()=>{
+  try{await navigator.clipboard.writeText(state.text);$('status').textContent='Text kopiert. Öffne dein Word-Dokument, markiere den alten Text und füge den neuen ein.';}
+  catch(e){go(1);txt.focus();txt.select();alert('Der Text ist jetzt markiert. Tippe auf „Kopieren“ und füge ihn in Word ein.');}
+});
+function newText(){
+  if(!confirm('Text, Checkliste und Protokoll auf diesem Gerät löschen?')) return;
+  state={ver:4,firstCase:null,firstComma:null,type:state.type,text:'',checked:false,checks:{},changes:'',name:state.name,first:null,step:1};
+  save(); $('status').textContent=''; init();
+}
+$('resetBtn').addEventListener('click',newText);
+$('newBtn').addEventListener('click',newText);
+
+/* Navigation */
+function go(n){
+  if(n>1&&!state.checked) n=1;
+  state.step=n;
+  const sec=n<=3?1:n-2;
+  [1,2,3].forEach(i=>{$('s'+i).hidden=i!==sec;});
+  const newMode=n===2?'gk':n===3?'komma':'stil';
+  if(newMode!==mode) sel=-1;
+  mode=newMode; document.body.dataset.mode=mode;
+  if(n===2&&state.firstCase==null) state.firstCase=analyzeCase(state.text).counts.kase;
+  if(n===3&&state.firstComma==null) state.firstComma=analyzeComma(state.text).counts.komma;
+  save();
+  document.querySelectorAll('.steps button').forEach(b=>{
+    if(+b.dataset.step===n) b.setAttribute('aria-current','step'); else b.removeAttribute('aria-current');
+  });
+  if(n<=3){refresh();requestAnimationFrame(fit);}
+  if(n===4){renderChecklist();$('changes').value=state.changes;}
+  if(n===5){$('name').value=state.name;renderProtocol();}
+  window.scrollTo(0,0);
+}
+document.querySelectorAll('.steps button').forEach(b=>b.addEventListener('click',()=>go(+b.dataset.step)));
+document.querySelectorAll('[data-go]').forEach(b=>b.addEventListener('click',()=>go(+b.dataset.go)));
+window.addEventListener('resize',fit);
+
+function init(){
+  const r=typesEl.querySelector('input[value="'+state.type+'"]'); if(r) r.checked=true;
+  txt.value=state.text; wc(); sel=-1;
+  $('newBtn').hidden=!state.text.trim();
+  showChecked();
+  if(!state.ver){state.ver=4;state.step=1;state.firstCase=null;}
+  if(state.ver===3){if(state.step>=3) state.step++; state.ver=4;}
+  if(state.firstComma===undefined) state.firstComma=null;
+  go(Math.min(state.step||1,5));
+  fit();
+}
+init();
+})();
+</script>
+</body>
+</html>
