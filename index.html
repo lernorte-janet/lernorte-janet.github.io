@@ -165,11 +165,11 @@ const FAECHER = {
     themen: [
       { thema: "Instrumente", eintraege: [
         { titel: "Instrumentenkunde", info: "Instrumente kennenlernen und erkennen",
-          datei: "musik/instrumente.html", art: "App" }
+          datei: "instrumente.html", art: "App" }
       ]},
       { thema: "Rhythmus", eintraege: [
         { titel: "Rhythmus-Trainer", info: "Bausteine, Hören, Taktsprache, Diktat",
-          datei: "musik/rhythmus.html", art: "App" }
+          datei: "rhythmus.html", art: "App" }
       ]}
     ]
   }
@@ -185,8 +185,9 @@ async function pruefen(datei) {
   if (datei in vorhanden) return vorhanden[datei];
   try {
     const r = await fetch(datei, { method: "HEAD", cache: "no-store" });
-    vorhanden[datei] = r.ok;
-  } catch (e) { vorhanden[datei] = location.protocol === "file:"; }
+    // Nur eine klare «nicht gefunden»-Antwort gilt als fehlend.
+    vorhanden[datei] = r.status !== 404;
+  } catch (e) { vorhanden[datei] = true; }
   return vorhanden[datei];
 }
 
