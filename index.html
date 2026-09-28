@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="de-CH">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Lernorte</title>
+<style>
+/* ================================================================
+   Hier den Namen anpassen: steht oben auf der Seite.
+   ================================================================ */
+:root {
+  --ink: #1b1f24;
+  --muted: #5d6570;
+  --page: #f4f5f7;
+  --paper: #ffffff;
+  --line: #d9dde3;
+  --mathe: #1d5fa0;   --mathe-bg: #eef4fb;  --mathe-grid: #c9dcf0;
+  --deutsch: #b3261e; --deutsch-bg: #ffffff; --deutsch-rule: #c7d6ec;
+  --musik: #5b3a8c;   --musik-bg: #f5f2fa;  --musik-staff: #cfc3e3;
+  --font: "Avenir Next", "Avenir", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ink: #eceef1; --muted: #a9b0ba; --page: #16181c; --paper: #1f2227; --line: #343840;
+    --mathe: #7fb2e8;   --mathe-bg: #1a2430;  --mathe-grid: #273a50;
+    --deutsch: #f08a82; --deutsch-bg: #1f2227; --deutsch-rule: #2e3a4d;
+    --musik: #b9a0e0;   --musik-bg: #231f2c;  --musik-staff: #3b3350;
+  }
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0; background: var(--page); color: var(--ink);
+  font-family: var(--font); font-size: 18px; line-height: 1.5;
+  padding: env(safe-area-inset-top, 0) env(safe-area-inset-right, 0) env(safe-area-inset-bottom, 0) env(safe-area-inset-left, 0);
+}
+.wrap { max-width: 980px; margin: 0 auto; padding: 32px 20px 56px; }
+header .name { margin: 0; color: var(--muted); font-size: 1rem; font-weight: 600; }
+h1 { margin: 2px 0 6px; font-size: clamp(2.4rem, 7vw, 3.6rem); line-height: 1.05; font-weight: 800; letter-spacing: -0.02em; }
+header p { margin: 0 0 28px; color: var(--muted); }
+
+/* ---------- Die drei Orte ---------- */
+.orte { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+@media (max-width: 760px) { .orte { grid-template-columns: 1fr; } }
+.ort {
+  position: relative; display: flex; flex-direction: column; justify-content: flex-end;
+  min-height: 220px; padding: 22px; border-radius: 6px; text-decoration: none; color: var(--ink);
+  border: 2px solid transparent; overflow: hidden;
+}
+.ort:focus-visible, .eintrag:focus-visible, .zurueck:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
+.ort h2 { margin: 0; font-size: 1.9rem; font-weight: 800; letter-spacing: -0.01em; }
+.ort span { color: var(--muted); font-size: 0.95rem; }
+.ort:hover { border-color: currentColor; }
+
+/* Mathe: Karopapier */
+.mathe { background-color: var(--mathe-bg);
+  background-image: linear-gradient(var(--mathe-grid) 1px, transparent 1px),
+                    linear-gradient(90deg, var(--mathe-grid) 1px, transparent 1px);
+  background-size: 22px 22px; }
+.mathe h2 { color: var(--mathe); }
+/* Deutsch: liniertes Heft mit Korrekturrand */
+.deutsch { background-color: var(--deutsch-bg);
+  background-image: linear-gradient(90deg, transparent 38px, var(--deutsch) 38px, var(--deutsch) 40px, transparent 40px),
+                    repeating-linear-gradient(to bottom, transparent 0 29px, var(--deutsch-rule) 29px 30px);
+  padding-left: 58px; border-color: var(--line); }
+.deutsch h2 { color: var(--deutsch); }
+/* Musik: Notenlinien */
+.musik { background-color: var(--musik-bg);
+  background-image: repeating-linear-gradient(to bottom,
+      transparent 0 20px,
+      var(--musik-staff) 20px 21px, transparent 21px 30px,
+      var(--musik-staff) 30px 31px, transparent 31px 40px,
+      var(--musik-staff) 40px 41px, transparent 41px 50px,
+      var(--musik-staff) 50px 51px, transparent 51px 60px,
+      var(--musik-staff) 60px 61px, transparent 61px 96px); }
+.musik h2 { color: var(--musik); }
+
+/* ---------- Ansicht eines Fachs ---------- */
+#fach[hidden], #start[hidden] { display: none; }
+.zurueck { display: inline-block; margin-bottom: 18px; padding: 10px 14px; border-radius: 6px;
+  background: var(--paper); border: 1px solid var(--line); color: var(--ink); text-decoration: none; font-weight: 600; }
+.fachkopf { padding: 26px 22px; border-radius: 6px; margin-bottom: 26px; }
+.fachkopf h2 { margin: 0; font-size: clamp(2rem, 6vw, 2.8rem); font-weight: 800; line-height: 1.1; }
+.thema { margin: 0 0 28px; }
+.thema h3 { margin: 0 0 10px; font-size: 1.25rem; }
+.liste { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
+.eintrag { display: flex; align-items: center; gap: 14px; padding: 16px 18px; min-height: 64px;
+  background: var(--paper); border: 1px solid var(--line); border-left: 6px solid var(--akzent);
+  border-radius: 6px; color: var(--ink); text-decoration: none; }
+.eintrag:hover { border-color: var(--akzent); }
+.eintrag .text { flex: 1; }
+.eintrag strong { display: block; font-size: 1.05rem; }
+.eintrag small { color: var(--muted); font-size: 0.92rem; }
+.art { flex: none; font-size: 0.85rem; font-weight: 700; color: var(--akzent);
+  border: 1.5px solid var(--akzent); border-radius: 999px; padding: 2px 10px; }
+.eintrag.spaeter { opacity: 0.55; pointer-events: none; border-left-style: dashed; }
+.leer { color: var(--muted); }
+footer { margin-top: 40px; color: var(--muted); font-size: 0.85rem; }
+@media (prefers-reduced-motion: no-preference) { .ort { transition: border-color .15s; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <p class="name" id="name"></p>
+    <h1>Lernorte</h1>
+    <p>Tipps, Erklärungen und Übungs-Apps für den Unterricht.</p>
+  </header>
+
+  <main>
+    <section id="start" aria-label="Fächer">
+      <nav class="orte">
+        <a class="ort mathe" href="#mathematik"><h2>Mathematik</h2><span id="z-mathematik"></span></a>
+        <a class="ort deutsch" href="#deutsch"><h2>Deutsch</h2><span id="z-deutsch"></span></a>
+        <a class="ort musik" href="#musik"><h2>Musik</h2><span id="z-musik"></span></a>
+      </nav>
+    </section>
+
+    <section id="fach" hidden>
+      <a class="zurueck" href="#">‹ Alle Fächer</a>
+      <div class="fachkopf" id="fachkopf"><h2 id="fachtitel"></h2></div>
+      <div id="themen"></div>
+    </section>
+  </main>
+
+  <footer id="fuss"></footer>
+</div>
+
+<script>
+/* ================================================================
+   HIER ANPASSEN
+   1. Deinen Namen eintragen.
+   2. Neue Materialien: Datei in den passenden Ordner hochladen
+      und unten einen Eintrag ergänzen (Titel, Info, Datei, Art).
+   Ist eine Datei noch nicht hochgeladen, erscheint der Eintrag
+   automatisch grau mit «kommt bald».
+   ================================================================ */
+const NAME = "Janet";
+
+const FAECHER = {
+  mathematik: {
+    titel: "Mathematik", stil: "mathe", farbe: "var(--mathe)",
+    themen: [
+      { thema: "2b Variablen", eintraege: [
+        { titel: "Aufgabe 1: Kugeln in Säcken", info: "Themenbuch S. 24 · Erklärung und Tipps",
+          datei: "mathe/2b_S24_Aufgabe1_Tipps.pdf", art: "PDF" },
+        { titel: "Aufgabe 1.1 a–c: Terme auf Etiketten", info: "Arbeitsheft S. 44 · Erklärung und Tipps",
+          datei: "mathe/2b_S44_Aufgabe1-1abc_Tipps.pdf", art: "PDF" },
+        { titel: "Aufgaben 1.1 d–e und 1.2 a", info: "Arbeitsheft S. 45 · Erklärung und Tipps",
+          datei: "mathe/2b_S45_Aufgabe1-1de_1-2a_Tipps.pdf", art: "PDF" }
+      ]}
+    ]
+  },
+  deutsch: {
+    titel: "Deutsch", stil: "deutsch", farbe: "var(--deutsch)",
+    themen: [
+      { thema: "Aufsätze überarbeiten", eintraege: [
+        { titel: "Schreibwerkstatt", info: "Erzählung, Zusammenfassung, Erörterung überarbeiten",
+          datei: "deutsch/schreibwerkstatt.html", art: "App" }
+      ]}
+    ]
+  },
+  musik: {
+    titel: "Musik", stil: "musik", farbe: "var(--musik)",
+    themen: [
+      { thema: "Instrumente", eintraege: [
+        { titel: "Instrumentenkunde", info: "Instrumente kennenlernen und erkennen",
+          datei: "musik/instrumente.html", art: "App" }
+      ]},
+      { thema: "Rhythmus", eintraege: [
+        { titel: "Rhythmus-Trainer", info: "Bausteine, Hören, Taktsprache, Diktat",
+          datei: "musik/rhythmus.html", art: "App" }
+      ]}
+    ]
+  }
+};
+
+/* ---------- ab hier nichts ändern ---------- */
+document.getElementById("name").textContent = NAME;
+document.getElementById("fuss").textContent = "Lernorte von " + NAME;
+document.title = "Lernorte · " + NAME;
+
+const vorhanden = {};
+async function pruefen(datei) {
+  if (datei in vorhanden) return vorhanden[datei];
+  try {
+    const r = await fetch(datei, { method: "HEAD", cache: "no-store" });
+    vorhanden[datei] = r.ok;
+  } catch (e) { vorhanden[datei] = location.protocol === "file:"; }
+  return vorhanden[datei];
+}
+
+for (const [id, f] of Object.entries(FAECHER)) {
+  const n = f.themen.reduce((s, t) => s + t.eintraege.length, 0);
+  document.getElementById("z-" + id).textContent = n === 1 ? "1 Material" : n + " Materialien";
+}
+
+function zeigen() {
+  const id = decodeURIComponent(location.hash.slice(1));
+  const f = FAECHER[id];
+  document.getElementById("start").hidden = !!f;
+  document.getElementById("fach").hidden = !f;
+  if (!f) return;
+  const kopf = document.getElementById("fachkopf");
+  kopf.className = "fachkopf ort " + f.stil;
+  document.getElementById("fachtitel").textContent = f.titel;
+  const themen = document.getElementById("themen");
+  themen.innerHTML = "";
+  themen.style.setProperty("--akzent", f.farbe);
+  if (!f.themen.length) {
+    themen.innerHTML = '<p class="leer">Hier kommen bald Materialien.</p>';
+  }
+  for (const t of f.themen) {
+    const sec = document.createElement("section");
+    sec.className = "thema";
+    sec.innerHTML = "<h3></h3><ul class='liste'></ul>";
+    sec.querySelector("h3").textContent = t.thema;
+    const ul = sec.querySelector("ul");
+    for (const e of t.eintraege) {
+      const li = document.createElement("li");
+      const a = document.createElement("a");
+      a.className = "eintrag";
+      a.href = e.datei;
+      a.innerHTML = "<span class='text'><strong></strong><small></small></span><span class='art'></span>";
+      a.querySelector("strong").textContent = e.titel;
+      a.querySelector("small").textContent = e.info;
+      a.querySelector(".art").textContent = e.art;
+      pruefen(e.datei).then(ok => {
+        if (!ok) { a.classList.add("spaeter"); a.querySelector(".art").textContent = "kommt bald"; a.removeAttribute("href"); }
+      });
+      li.appendChild(a); ul.appendChild(li);
+    }
+    themen.appendChild(sec);
+  }
+  window.scrollTo(0, 0);
+}
+window.addEventListener("hashchange", zeigen);
+zeigen();
+</script>
+</body>
+</html>
