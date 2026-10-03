@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Rhythmus-Trainer</title>
+<meta name="description" content="Bausteine, Hören, Taktsprache, Diktat">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#eef1f5;--paper:#fff;--sheet:#fbfaf6;--note:#161b30;--ink:#1b2240;--muted:#5b6480;--line:#d6dbe6;
+  --acc:#4b55b8;--hi:#f4c534;--ok:#2f8a4a;--bad:#c23b3b;
+  box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#141826;--paper:#1e2436;--ink:#eef0f7;--muted:#a4abc2;--line:#2f3750;--acc:#8e97f0}}
+:root[data-theme="dark"]{--bg:#141826;--paper:#1e2436;--ink:#eef0f7;--muted:#a4abc2;--line:#2f3750;--acc:#8e97f0}
+html{scroll-padding-top:calc(env(safe-area-inset-top,0px) + 70px)}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.5 "Atkinson Hyperlegible",system-ui,-apple-system,sans-serif}
+h1,h2,h3{font-family:"Bricolage Grotesque","Atkinson Hyperlegible",system-ui,sans-serif;margin:0;line-height:1.1}
+.wrap{max-width:1100px;margin:0 auto;padding:0 18px}
+header{padding:28px 0 14px}
+h1{font-size:clamp(2.2rem,7vw,4rem);font-weight:800;letter-spacing:-.02em}
+.lead{color:var(--muted);margin:8px 0 0;max-width:60ch}
+.beatline{display:flex;gap:8px;margin-top:18px;height:10px;max-width:420px}
+.beatline span{flex:1;border-radius:5px;background:var(--acc);opacity:.35}
+.beatline span:nth-child(4n+1){opacity:1}
+nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);border-bottom:1px solid var(--line)}
+.tabs{display:flex;gap:6px;padding:10px 18px;overflow-x:auto;max-width:1100px;margin:0 auto}
+.tab{font:inherit;font-weight:700;border:2px solid var(--line);background:var(--paper);color:var(--ink);border-radius:999px;padding:8px 16px;cursor:pointer;white-space:nowrap}
+.tab[aria-selected="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
+main{padding:10px 0 60px}
+/* Einstellungen */
+details.set{background:var(--paper);border:1px solid var(--line);border-radius:12px;margin-top:16px}
+details.set summary{cursor:pointer;padding:12px 16px;font-weight:700;list-style:none;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+details.set summary::-webkit-details-marker{display:none}
+details.set summary .sum{font-weight:400;color:var(--muted)}
+.setbody{padding:4px 16px 16px;display:grid;gap:16px}
+.row{display:flex;flex-wrap:wrap;gap:14px;align-items:center}
+.row label{display:flex;align-items:center;gap:8px}
+select{font:inherit;padding:6px 8px;border-radius:8px;border:2px solid var(--line);background:var(--paper);color:var(--ink)}
+input[type=range]{width:200px;accent-color:var(--acc)}
+input[type=checkbox]{width:22px;height:22px;accent-color:var(--acc)}
+.chips{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px}
+.chip{font:inherit;border:2px solid var(--line);background:var(--paper);color:var(--ink);border-radius:10px;padding:6px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:.85rem}
+.chip .sheet{width:100%;padding:2px}
+.chip .sheet svg{height:44px}
+.chip[aria-pressed="true"]{border-color:var(--acc);box-shadow:0 0 0 2px var(--acc) inset}
+.chip[aria-pressed="false"]{opacity:.45}
+.small{font:inherit;font-weight:700;border:2px solid var(--line);background:transparent;color:var(--ink);border-radius:8px;padding:5px 12px;cursor:pointer}
+/* Notenblatt */
+.sheet{background:var(--sheet);border-radius:8px;display:flex;align-items:center;justify-content:center;overflow-x:auto}
+.sheet svg{display:block;height:84px;width:auto;max-width:none}
+.ni{fill:var(--note)}.nh{fill:var(--sheet)}.nl{stroke:var(--note)}
+.nt{fill:#3a4160;font-family:"Atkinson Hyperlegible",sans-serif;font-weight:700}
+/* Bausteine */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-top:22px}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:10px;display:flex;flex-direction:column;gap:8px}
+.card .sheet{height:120px}
+.card .sheet svg{height:96px}
+.card h3{font-size:1.1rem}
+.syl{font-family:"Bricolage Grotesque",sans-serif;font-weight:800;font-size:1.6rem;letter-spacing:.01em}
+.syl .sy{border-radius:6px;padding:0 2px;transition:background .08s}
+.syl .sy.on{background:var(--hi);color:#1b2240}
+.syl .dash{color:var(--muted)}
+.card .play{margin-top:auto}
+.play{font:inherit;font-weight:700;display:flex;align-items:center;justify-content:center;gap:8px;border:0;border-radius:8px;background:var(--acc);color:#fff;padding:9px 10px;cursor:pointer}
+.play svg{width:14px;height:14px;fill:currentColor}
+/* Quiz */
+.panel{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:18px;margin-top:22px}
+.qhead{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between}
+.qhead h2{font-size:1.8rem}
+.score{font-weight:700;font-size:1.1rem}
+.big{font:inherit;font-weight:700;font-size:1.15rem;border:0;border-radius:12px;background:var(--ink);color:var(--bg);padding:16px 22px;cursor:pointer;display:inline-flex;gap:10px;align-items:center}
+.big svg{width:18px;height:18px;fill:currentColor}
+.big:disabled{opacity:.4;cursor:default}
+.ghost{font:inherit;font-weight:700;border:2px solid var(--line);background:transparent;color:var(--ink);border-radius:12px;padding:12px 18px;cursor:pointer}
+.ghost:disabled{opacity:.4;cursor:default}
+.qbar{display:flex;gap:10px;flex-wrap:wrap;margin:18px 0;align-items:center}
+.opts{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+@media(min-width:720px){.opts{grid-template-columns:repeat(4,1fr)}}
+.opt{font:inherit;background:var(--paper);color:var(--ink);border:3px solid var(--line);border-radius:12px;padding:10px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;font-weight:700;min-height:90px}
+.opt .sheet{width:100%;height:100px}
+.opt .sheet svg{height:86px}
+.opts.wide{grid-template-columns:1fr}
+@media(min-width:620px){.opts.wide.half{grid-template-columns:repeat(2,1fr)}}
+.opts.wide .sheet{height:auto;padding:6px 4px}
+.opts.wide .sheet svg{height:96px;width:auto;max-width:100%}
+.mrow .sheet svg.fit{width:100%;height:auto;max-height:90px}
+.opt.txt{font-family:"Bricolage Grotesque",sans-serif;font-size:1.5rem;font-weight:800}
+.opt.right{border-color:var(--ok);box-shadow:0 0 0 3px var(--ok) inset}
+.opt.wrong{border-color:var(--bad);opacity:.75}
+.opt:disabled{cursor:default}
+.ask{font-size:1.5rem;font-family:"Bricolage Grotesque",sans-serif;font-weight:800;margin:14px 0}
+.show{margin:6px 0 16px}
+.show .sheet{height:150px}.show .sheet svg{height:124px}
+.show .syl{font-size:2.6rem;text-align:center;padding:24px 0}
+.fb{min-height:1.6em;font-weight:700;font-size:1.15rem;margin-top:14px}
+.fb.ok{color:var(--ok)}.fb.no{color:var(--bad)}
+.hidden{display:none!important}
+/* Diktat */
+.answer .sheet{min-height:130px;justify-content:flex-start;padding:0 8px}
+.answer .sheet svg{height:124px}
+.count{color:var(--muted);font-weight:700;margin:8px 0}
+.palette{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:8px;margin-top:14px}
+.pbtn{font:inherit;border:2px solid var(--line);background:var(--paper);border-radius:10px;padding:4px;cursor:pointer}
+.pbtn .sheet svg{height:66px}
+.pbtn:disabled{opacity:.3;cursor:default}
+.cmp{display:grid;gap:10px;margin-top:14px}
+.cmp h3{font-size:1rem;color:var(--muted);margin-bottom:4px}
+.cmp .sheet{justify-content:flex-start;padding:0 8px}
+.cmp .sheet svg{height:112px}
+/* Resultat */
+.result h3{font-size:1.4rem;margin:18px 0 8px}
+.miss{display:grid;gap:10px}
+.mrow{border:1px solid var(--line);border-radius:10px;padding:10px;display:grid;gap:6px}
+.mrow .sheet{justify-content:flex-start;padding:0 8px}
+.mrow .sheet svg{height:80px}
+.mrow .lbl{font-size:.9rem;color:var(--muted)}
+.mrow .lbl b{color:var(--ink)}
+.pct{font-size:clamp(2.4rem,9vw,4rem);font-family:"Bricolage Grotesque",sans-serif;font-weight:800}
+#toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom,0px) + 18px);background:var(--ink);color:var(--bg);padding:12px 18px;border-radius:10px;font-weight:700;display:none;z-index:20;max-width:90vw}
+footer{color:var(--muted);font-size:.85rem;padding:20px 0 40px}
+@media (prefers-reduced-motion:reduce){.syl .sy{transition:none}}
+</style>
+</head>
+<body>
+<header class="wrap">
+  <h1>Rhythmus</h1>
+  <p class="lead">Rhythmusbausteine hören, lesen und mit der Taktsprache sprechen. Im Diktat schreibst du vorgeklopfte Rhythmen selbst auf.</p>
+  <div class="beatline" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+</header>
+<nav><div class="tabs" role="tablist">
+  <button class="tab" role="tab" data-v="lex" aria-selected="true">Bausteine</button>
+  <button class="tab" role="tab" data-v="hq" aria-selected="false">Hören</button>
+  <button class="tab" role="tab" data-v="tq" aria-selected="false">Taktsprache</button>
+  <button class="tab" role="tab" data-v="dk" aria-selected="false">Diktat</button>
+</div></nav>
+<main class="wrap">
+  <details class="set" id="set">
+    <summary><span>Einstellungen</span><span class="sum" id="setsum"></span></summary>
+    <div class="setbody">
+      <div class="row">
+        <label>Tempo <input type="range" id="tempo" min="50" max="120" step="2"> <b id="tempoV"></b></label>
+        <label>Klang <select id="sound"><option value="piano">Klavier</option><option value="marimba">Marimba</option><option value="beep">Einfacher Ton</option></select></label>
+        <label><input type="checkbox" id="metro"> Metronom beim Abspielen</label>
+      </div>
+      <div>
+        <div class="row" style="margin-bottom:8px"><b>Bausteine für Quiz und Diktat</b>
+          <button class="small" id="all">Alle</button><button class="small" id="none">Keine</button></div>
+        <div class="chips" id="chips"></div>
+      </div>
+    </div>
+  </details>
+
+  <section id="v-lex"><div class="grid" id="grid"></div></section>
+
+  <section id="v-hq" class="hidden"><div class="panel" id="hq"></div></section>
+  <section id="v-tq" class="hidden"><div class="panel" id="tq"></div></section>
+  <section id="v-dk" class="hidden"><div class="panel" id="dk"></div></section>
+</main>
+<footer class="wrap">Taktsprache: ta, ta-te, ta-ga-te-ge. Vor jedem Rhythmus wird ein Takt eingezählt.</footer>
+<div id="toast" role="status"></div>
+<script>
+/* ---------- Bausteine ---------- */
+const B=[
+ {id:1,name:'Ganze Note',n:[['w',0]],beats:4,on:[0],syl:[['ta',0],['a',1],['a',2],['a',3]]},
+ {id:2,name:'Halbe Note',n:[['h',0]],beats:2,on:[0],syl:[['ta',0],['a',1]]},
+ {id:3,name:'Viertelnote',n:[['q',0]],beats:1,on:[0],syl:[['ta',0]]},
+ {id:4,name:'Zwei Achtel',n:[['e',0],['e',0]],beats:1,on:[0,.5],syl:[['ta',0],['te',.5]]},
+ {id:5,name:'Vier Sechzehntel',n:[['s',0],['s',0],['s',0],['s',0]],beats:1,on:[0,.25,.5,.75],sec:[['f',0,3]],syl:[['ta',0],['ga',.25],['te',.5],['ge',.75]]},
+ {id:6,name:'Achtel + zwei Sechzehntel',n:[['e',0],['s',0],['s',0]],beats:1,on:[0,.5,.75],sec:[['f',1,2]],syl:[['ta',0],['te',.5],['ge',.75]]},
+ {id:7,name:'Zwei Sechzehntel + Achtel',n:[['s',0],['s',0],['e',0]],beats:1,on:[0,.25,.5],sec:[['f',0,1]],syl:[['ta',0],['ga',.25],['te',.5]]},
+ {id:8,name:'Sechzehntel + Achtel + Sechzehntel',n:[['s',0],['e',0],['s',0]],beats:1,on:[0,.25,.75],sec:[['r',0],['l',2]],syl:[['ta',0],['ga',.25],['ge',.75]]},
+ {id:9,name:'Punktierte Achtel + Sechzehntel',n:[['e',1],['s',0]],beats:1,on:[0,.75],sec:[['l',1]],syl:[['ta',0],['e',.5],['ge',.75]]},
+ {id:10,name:'Sechzehntel + punktierte Achtel',n:[['s',0],['e',1]],beats:1,on:[0,.25],sec:[['r',0]],syl:[['ta',0],['ga',.25],['e',.5]]},
+ {id:11,name:'Achteltriole',n:[['e',0],['e',0],['e',0]],beats:1,on:[0,1/3,2/3],trip:true,syl:[['ta',0],['te',1/3],['ti',2/3]]},
+ {id:12,name:'Punktierte Viertel + Achtel',n:[['q',1],['e',0]],beats:2,on:[0,1.5],nobeam:true,syl:[['ta',0],['a',1],['te',1.5]]},
+];
+const byId=Object.fromEntries(B.map(b=>[b.id,b]));
+const sylStr=b=>b.syl.map(s=>s[0]).join('-');
+
+/* ---------- Notensatz ---------- */
+const HY=92,STEM=50,TOP=HY-STEM,RX=8.2,RY=5.8,ROT=-22,BT=6.5,BG=4.5,SP=46,PAD=26;
+const sx=x=>x+RX-1.1;
+function head(x,filled,whole){
+  if(whole)return `<ellipse class="ni" cx="${x}" cy="${HY}" rx="11" ry="7"/><ellipse class="nh" cx="${x}" cy="${HY}" rx="4.2" ry="6" transform="rotate(35 ${x} ${HY})"/>`;
+  let s=`<ellipse class="ni" cx="${x}" cy="${HY}" rx="${RX}" ry="${RY}" transform="rotate(${ROT} ${x} ${HY})"/>`;
+  if(!filled)s+=`<ellipse class="nh" cx="${x}" cy="${HY}" rx="${RX-2.8}" ry="${RY-3.1}" transform="rotate(${ROT} ${x} ${HY})"/>`;
+  return s;
+}
+function blockW(b){if(b.n[0][0]==='w')return 70;return 2*PAD+(b.n.length-1)*SP+(b.n[b.n.length-1][1]?14:0)}
+function blockG(b,x0){
+  const n=b.n.length,g=[];
+  const xs=b.n[0][0]==='w'?[x0+35]:b.n.map((_,i)=>x0+PAD+i*SP);
+  b.n.forEach(([t,dot],i)=>{const x=xs[i];
+    g.push(head(x,t!=='w'&&t!=='h',t==='w'));
+    if(t!=='w')g.push(`<rect class="ni" x="${sx(x)-.8}" y="${TOP}" width="1.9" height="${HY-TOP-1}"/>`);
+    if(dot)g.push(`<circle class="ni" cx="${x+RX+7}" cy="${HY-4}" r="2.8"/>`);
+    if(t==='e'&&b.nobeam){const X=sx(x)+.9;
+      g.push(`<path class="ni" d="M${X} ${TOP} C${X+2} ${TOP+12},${X+18} ${TOP+18},${X+13} ${TOP+38} C${X+16} ${TOP+22},${X+6} ${TOP+17},${X} ${TOP+14} Z"/>`)}
+  });
+  if(!b.nobeam&&n>1){
+    g.push(`<rect class="ni" x="${sx(xs[0])-.8}" y="${TOP}" width="${sx(xs[n-1])-sx(xs[0])+1.9}" height="${BT}"/>`);
+    const y2=TOP+BT+BG;
+    (b.sec||[]).forEach(([k,i,j])=>{let a,c;
+      if(k==='f'){a=sx(xs[i])-.8;c=sx(xs[j])+1.1}else if(k==='r'){a=sx(xs[i])-.8;c=sx(xs[i])+15}else{a=sx(xs[i])-15;c=sx(xs[i])+1.1}
+      g.push(`<rect class="ni" x="${a}" y="${y2}" width="${c-a}" height="${BT}"/>`)});
+  }
+  if(b.trip){const a=sx(xs[0]),c=sx(xs[n-1]),m=(a+c)/2,y=TOP-12;
+    g.push(`<path class="nl" d="M${a} ${y+6} V${y} H${m-9} M${m+9} ${y} H${c} V${y+6}" stroke-width="1.5" fill="none"/>`);
+    g.push(`<text class="ni" x="${m}" y="${y+6}" font-family="Georgia,serif" font-style="italic" font-weight="bold" font-size="17" text-anchor="middle">3</text>`)}
+  return g.join('');
+}
+/* Ein einzelner Baustein */
+function svgBlock(id){const b=byId[id],w=blockW(b);
+  return `<svg viewBox="0 12 ${w} 100" role="img" aria-label="${b.name}"><line class="nl" x1="4" y1="${HY}" x2="${w-4}" y2="${HY}" stroke-width="1.4"/>${blockG(b,0)}</svg>`}
+/* Folge von Bausteinen mit Taktstrichen; opts.syl: Taktsprache darunter, opts.bars: Anzahl Takte (für leere Plätze) */
+function svgSeq(ids,opts={}){
+  let x=10,beat=0,g=[],bars=[];const H=opts.syl?132:112;
+  ids.forEach((id,k)=>{const b=byId[id],w=blockW(b);
+    g.push(`<g>${blockG(b,x)}</g>`);
+    if(opts.syl)g.push(`<text class="nt" x="${x+w/2}" y="${HY+32}" font-size="15" text-anchor="middle">${sylStr(b)}</text>`);
+    x+=w;beat+=b.beats;
+    if(beat%4===0&&k<ids.length-1){bars.push(x+4);x+=8}
+  });
+  const full=opts.total&&beat>=opts.total;
+  let end=x+(opts.pad||0);
+  bars.forEach(bx=>g.push(`<rect class="ni" x="${bx-1}" y="${HY-26}" width="2" height="52"/>`));
+  if(full||opts.final){g.push(`<rect class="ni" x="${end}" y="${HY-26}" width="1.8" height="52"/><rect class="ni" x="${end+5}" y="${HY-26}" width="5" height="52"/>`);end+=14}
+  else end+=10;
+  const W=Math.max(end,opts.minW||0);
+  return `<svg viewBox="0 12 ${W} ${H-12}"><line class="nl" x1="2" y1="${HY}" x2="${W-2}" y2="${HY}" stroke-width="1.4"/>${g.join('')}</svg>`;
+}
+
+/* ---------- Einstellungen ---------- */
+const S={tempo:72,metro:true,sel:B.map(b=>b.id),bars:1,hqMode:1,sound:'piano'};
+try{Object.assign(S,JSON.parse(localStorage.getItem('rhythmus-set')||'{}'))}catch(e){}
+function saveS(){try{localStorage.setItem('rhythmus-set',JSON.stringify(S))}catch(e){}summ()}
+const $=id=>document.getElementById(id);
+function summ(){$('setsum').textContent=`Tempo ${S.tempo}, ${S.sel.length} von 12 Bausteinen`}
+$('tempo').value=S.tempo;$('tempoV').textContent=S.tempo;$('metro').checked=S.metro;
+$('tempo').oninput=e=>{S.tempo=+e.target.value;$('tempoV').textContent=S.tempo;saveS()};
+$('sound').value=S.sound;$('sound').onchange=e=>{S.sound=e.target.value;saveS();playIds([3,4,5,3],{countIn:false})};
+$('metro').onchange=e=>{S.metro=e.target.checked;saveS()};
+function drawChips(){$('chips').innerHTML=B.map(b=>`<button class="chip" data-id="${b.id}" aria-pressed="${S.sel.includes(b.id)}" aria-label="${b.name}"><div class="sheet">${svgBlock(b.id)}</div>${sylStr(b)}</button>`).join('');
+  $('chips').querySelectorAll('.chip').forEach(c=>c.onclick=()=>{const id=+c.dataset.id;
+    S.sel=S.sel.includes(id)?S.sel.filter(x=>x!==id):[...S.sel,id].sort((a,b)=>a-b);c.setAttribute('aria-pressed',S.sel.includes(id));saveS()})}
+$('all').onclick=()=>{S.sel=B.map(b=>b.id);drawChips();saveS()};
+$('none').onclick=()=>{S.sel=[];drawChips();saveS()};
+drawChips();summ();
+
+/* ---------- Audio ---------- */
+let ctx,master,bus;
+function ac(){if(!ctx){try{if(navigator.audioSession)navigator.audioSession.type='playback'}catch(e){}
+  ctx=new (window.AudioContext||window.webkitAudioContext)();const comp=ctx.createDynamicsCompressor();master=ctx.createGain();master.gain.value=.9;master.connect(comp);comp.connect(ctx.destination)}
+  if(ctx.state!=='running')ctx.resume();return ctx}
+function toast(m){const e=$('toast');e.textContent=m;e.style.display='block';clearTimeout(toast.t);toast.t=setTimeout(()=>e.style.display='none',6000)}
+let unlocked=false;
+function unlock(){try{ac();if(unlocked)return;unlocked=true;const b=ctx.createBuffer(1,1,22050),s=ctx.createBufferSource();s.buffer=b;s.connect(ctx.destination);s.start(0);
+ try{const sr=8000,n=800,ab=new ArrayBuffer(44+n*2),v=new DataView(ab);const w=(o,s)=>{for(let i=0;i<s.length;i++)v.setUint8(o+i,s.charCodeAt(i))};w(0,'RIFF');v.setUint32(4,36+n*2,true);w(8,'WAVE');w(12,'fmt ');v.setUint32(16,16,true);v.setUint16(20,1,true);v.setUint16(22,1,true);v.setUint32(24,sr,true);v.setUint32(28,sr*2,true);v.setUint16(32,2,true);v.setUint16(34,16,true);w(36,'data');v.setUint32(40,n*2,true);
+  const a=document.createElement('audio');a.setAttribute('playsinline','');a.loop=true;a.src=URL.createObjectURL(new Blob([ab],{type:'audio/wav'}));a.volume=.01;const pr=a.play();if(pr)pr.catch(()=>{});window._keep=a}catch(e){}
+}catch(e){toast('Ton konnte nicht gestartet werden: '+e.message)}}
+['touchend','pointerdown','click'].forEach(ev=>document.addEventListener(ev,unlock,{capture:true,passive:true}));
+let timers=[];
+function stopAll(){timers.forEach(clearTimeout);timers=[];document.querySelectorAll('.sy.on').forEach(e=>e.classList.remove('on'));
+  if(bus){const old=bus;try{old.gain.setTargetAtTime(0,ctx.currentTime,.02)}catch(e){}setTimeout(()=>old.disconnect(),300);bus=null}}
+let noiseBuf=null;
+function noise(){if(!noiseBuf){const n=ctx.sampleRate*.2;noiseBuf=ctx.createBuffer(1,n,ctx.sampleRate);const d=noiseBuf.getChannelData(0);for(let i=0;i<n;i++)d[i]=Math.random()*2-1}return noiseBuf}
+/* Metronom: weicher Holzklick */
+function click(t,accent,loud){const s=ctx.createBufferSource(),f=ctx.createBiquadFilter(),g=ctx.createGain();s.buffer=noise();
+  f.type='bandpass';f.frequency.value=accent?2600:1900;f.Q.value=6;const p=loud?.9:.35;
+  g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(p,t+.001);g.gain.exponentialRampToValueAtTime(.001,t+.045);
+  s.connect(f);f.connect(g);g.connect(bus);s.start(t);s.stop(t+.06)}
+/* Klavier: Obertöne mit eigenem Ausklingen, leicht verstimmte Saiten, Hammeranschlag */
+function piano(t,dur){const f0=523.25,end=t+Math.max(.12,dur*.95),out=ctx.createGain(),lp=ctx.createBiquadFilter();
+  lp.type='lowpass';lp.frequency.setValueAtTime(5200,t);lp.frequency.exponentialRampToValueAtTime(1800,t+.6);lp.Q.value=.4;
+  out.gain.setValueAtTime(1,t);out.gain.setValueAtTime(1,end);out.gain.setTargetAtTime(0,end,.045);out.connect(bus);lp.connect(out);
+  const amps=[1,.55,.32,.22,.12,.08,.05,.03];
+  amps.forEach((a,i)=>{const n=i+1,fr=f0*n*Math.sqrt(1+.00035*n*n),tau=1.6/Math.pow(n,.8);
+    [-2,2].forEach(dt=>{const o=ctx.createOscillator(),g=ctx.createGain();o.frequency.value=fr;o.detune.value=dt;
+      g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(a*.13,t+.004);g.gain.setTargetAtTime(0,t+.004,tau);
+      o.connect(g);g.connect(lp);o.start(t);o.stop(end+.3)})});
+  const s=ctx.createBufferSource(),hf=ctx.createBiquadFilter(),hg=ctx.createGain();s.buffer=noise();hf.type='bandpass';hf.frequency.value=1200;hf.Q.value=1;
+  hg.gain.setValueAtTime(.12,t);hg.gain.exponentialRampToValueAtTime(.001,t+.03);s.connect(hf);hf.connect(hg);hg.connect(out);s.start(t);s.stop(t+.04)}
+/* Marimba: weicher Schlag, klingt rasch aus */
+function marimba(t,dur){const f0=523.25,end=t+Math.max(.1,dur*.95),out=ctx.createGain();
+  out.gain.setValueAtTime(1,t);out.gain.setValueAtTime(1,end);out.gain.setTargetAtTime(0,end,.04);out.connect(bus);
+  [[1,.5,.9],[3.93,.12,.12],[9.2,.04,.04]].forEach(([r,a,tau])=>{const o=ctx.createOscillator(),g=ctx.createGain();o.type='sine';o.frequency.value=f0*r;
+    g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(a,t+.003);g.gain.setTargetAtTime(0,t+.003,tau);o.connect(g);g.connect(out);o.start(t);o.stop(end+.25)})}
+/* Einfacher Ton */
+function beep(t,dur){const g=ctx.createGain(),o=ctx.createOscillator(),end=t+Math.max(.06,dur*.9);
+  o.type='triangle';o.frequency.value=587.33;
+  g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(.45,t+.006);g.gain.exponentialRampToValueAtTime(.25,t+.09);
+  g.gain.setValueAtTime(.25,Math.max(t+.09,end-.03));g.gain.exponentialRampToValueAtTime(.001,end+.05);
+  o.connect(g);g.connect(bus);o.start(t);o.stop(end+.08)}
+function tone(t,dur){({piano,marimba,beep}[S.sound]||piano)(t,dur)}
+/* Spielt eine Liste von Bausteinen. hl(i,syllableIndex) wird für Hervorhebungen aufgerufen. */
+function playIds(ids,{countIn=true,hl=null,done=null}={}){
+  unlock();if(!ctx){toast('Ton nicht verfügbar');return}
+  stopAll();bus=ctx.createGain();bus.connect(master);
+  const spb=60/S.tempo,t0=ctx.currentTime+.12,ci=countIn?4:0;
+  for(let i=0;i<ci;i++)click(t0+i*spb,i===0,true);
+  const ev=[];let beat=0;
+  ids.forEach((id,k)=>{const b=byId[id];b.on.forEach((o,j)=>{const nx=j<b.on.length-1?b.on[j+1]:b.beats;ev.push([beat+o,nx-o])});
+    if(hl)b.syl.forEach((s,j)=>timers.push(setTimeout(()=>hl(k,j),((ci+beat+s[1])*spb+.12)*1000)));beat+=b.beats});
+  const start=t0+ci*spb;
+  ev.forEach(([o,d])=>tone(start+o*spb,d*spb));
+  if(S.metro)for(let i=0;i<Math.ceil(beat);i++)click(start+i*spb,i%4===0,false);
+  timers.push(setTimeout(()=>{if(hl)hl(-1,-1);if(done)done()},((ci+beat)*spb+.3)*1000));
+  if(ctx.state!=='running')setTimeout(()=>{if(ctx.state!=='running')toast('Kein Ton? Lautstärke prüfen und Stummschaltung am iPad ausschalten.')},800);
+}
+const playIcon='<svg viewBox="0 0 10 10"><path d="M1 0 L10 5 L1 10Z"/></svg>';
+
+/* ---------- Bausteine-Ansicht ---------- */
+function sylHTML(b){return b.syl.map((s,j)=>`<span class="sy" data-j="${j}">${s[0]}</span>`).join('<span class="dash">-</span>')}
+$('grid').innerHTML=B.map(b=>`<article class="card"><div class="sheet">${svgBlock(b.id)}</div><h3>${b.name}</h3><div class="syl" id="syl${b.id}">${sylHTML(b)}</div><button class="play" data-id="${b.id}">${playIcon} Anhören</button></article>`).join('');
+$('grid').querySelectorAll('.play').forEach(p=>p.onclick=()=>{const id=+p.dataset.id,b=byId[id];
+  const reps=4/b.beats,ids=Array(reps).fill(id),el=$('syl'+id);
+  playIds(ids,{hl:(k,j)=>{el.querySelectorAll('.sy').forEach(s=>s.classList.toggle('on',+s.dataset.j===j))}})});
+
+/* ---------- Hilfen ---------- */
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a};
+function deck(n){let out=[],pool=[];while(out.length<n){if(!pool.length){pool=shuffle(S.sel);if(out.length&&pool[0]===out[out.length-1]&&pool.length>1)pool.push(pool.shift())}out.push(pool.shift())}return out}
+const ROUND=10;
+/* Ein Takt aus den gewählten Bausteinen */
+function makeBar(len=4){let left=len,bar=[];const sel=S.sel;
+  while(left>0){const fit=sel.filter(id=>byId[id].beats<=left);if(!fit.length){bar.push(3);left-=1;continue}
+    const w=fit.map(id=>byId[id].beats===4?.3:byId[id].beats===2?.7:1),tot=w.reduce((a,c)=>a+c);let r=Math.random()*tot,k=0;
+    while(r>w[k]){r-=w[k];k++}bar.push(fit[k]);left-=byId[fit[k]].beats}
+  return bar}
+function needSel(el,min){if(S.sel.length>=min)return false;
+  el.innerHTML=`<div class="qhead"><h2>Zu wenige Bausteine</h2></div><p>Wähle unter «Einstellungen» mindestens ${min} Bausteine aus.</p>`;$('set').open=true;return true}
+function resultHTML(st,title){const n=st.score;
+  return `<div class="result"><div class="qhead"><h2>${title}</h2></div><p class="pct">${n} von ${ROUND}</p>
+  <p>${n===ROUND?'Alles richtig!':n>=7?'Gut gemacht. Schau dir die Fehler noch einmal an.':'Übe die Bausteine unten noch einmal.'}</p>
+  ${st.missed.length?`<h3>Das war falsch</h3><div class="miss">${st.missed.join('')}</div>`:''}
+  <div class="qbar"><button class="big" data-act="restart">Neue Runde</button></div></div>`}
+
+/* ---------- Hören-Quiz ---------- */
+let HQ=null;
+const HQM={1:'Einzelne Bausteine',2:'Rhythmus über 2 Schläge',4:'Rhythmus über 1 Takt'};
+/* Ähnliche, aber falsche Rhythmen: einzelne Bausteine austauschen */
+function variants(tgt,len){const seen=new Set([tgt.join()]),out=[];
+  for(let tries=0;out.length<3&&tries<300;tries++){let v;
+    if(tries<200){v=tgt.slice();const n=v.length>1&&Math.random()<.35?2:1;let changed=false;
+      for(let c=0;c<n;c++){const k=Math.random()*v.length|0,alt=S.sel.filter(id=>byId[id].beats===byId[v[k]].beats&&id!==v[k]);
+        if(alt.length){v[k]=alt[Math.random()*alt.length|0];changed=true}}
+      if(!changed)continue}
+    else v=makeBar(len);
+    const s=v.join();if(!seen.has(s)){seen.add(s);out.push(v)}}
+  return out}
+function hqStart(){if(needSel($('hq'),2))return;HQ={mode:S.hqMode,deck:deck(ROUND),i:0,score:0,missed:[]};hqQ(true)}
+function hqQ(auto){const el=$('hq');if(HQ.i>=ROUND){el.innerHTML=resultHTML(HQ,'Hören: Resultat');el.querySelector('[data-act=restart]').onclick=hqStart;return}
+  const single=HQ.mode===1;let tgt,opts;
+  if(single){const id=HQ.deck[HQ.i];tgt=[id];opts=shuffle([[id],...shuffle(S.sel.filter(x=>x!==id)).slice(0,3).map(x=>[x])])}
+  else{tgt=makeBar(HQ.mode);opts=shuffle([tgt,...variants(tgt,HQ.mode)])}
+  const key=tgt.join(),draw=ids=>single?svgBlock(ids[0]):svgSeq(ids,{final:true});
+  const name=ids=>single?byId[ids[0]].name:'Rhythmus';
+  const syl=ids=>ids.map(id=>sylStr(byId[id])).join(' | ');
+  el.innerHTML=`<div class="qhead"><h2>Hören</h2><span class="score">Frage ${HQ.i+1} von ${ROUND} · ${HQ.score} richtig</span></div>
+  <div class="qbar"><button class="big" id="hqplay">${playIcon} Anhören</button></div>
+  <p class="ask">${single?'Welcher Baustein erklingt?':'Welcher Rhythmus erklingt?'}</p>
+  <div class="opts${single?'':' wide'+(HQ.mode===2?' half':'')}">${opts.map((o,k)=>`<button class="opt" data-k="${k}"><div class="sheet">${draw(o)}</div></button>`).join('')}</div>
+  <p class="fb" id="hqfb"></p><div class="qbar hidden" id="hqnext"><button class="big">Weiter</button></div>`;
+  const play=()=>playIds(single?Array(4/byId[tgt[0]].beats).fill(tgt[0]):tgt);
+  $('hqplay').onclick=play;if(auto)play();
+  el.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{const pick=opts[+b.dataset.k],ok=pick.join()===key;
+    el.querySelectorAll('.opt').forEach(o=>{o.disabled=true;if(opts[+o.dataset.k].join()===key)o.classList.add('right');else if(o===b)o.classList.add('wrong')});
+    const fb=$('hqfb');if(ok){HQ.score++;fb.className='fb ok';fb.textContent=`Richtig: ${syl(tgt)}`}
+    else{fb.className='fb no';fb.textContent=single?`Leider falsch. Richtig ist ${byId[tgt[0]].name}: ${syl(tgt)}`:`Leider falsch. Richtig ist: ${syl(tgt)}`;
+      const fit=single?'':' class="fit"';
+      HQ.missed.push(`<div class="mrow"><div class="lbl">Erklungen: <b>${single?name(tgt)+' ('+syl(tgt)+')':syl(tgt)}</b></div><div class="sheet">${draw(tgt).replace('<svg','<svg'+fit)}</div><div class="lbl">Deine Wahl: <b>${single?name(pick):syl(pick)}</b></div><div class="sheet">${draw(pick).replace('<svg','<svg'+fit)}</div></div>`)}
+    el.querySelector('.score').textContent=`Frage ${HQ.i+1} von ${ROUND} · ${HQ.score} richtig`;
+    $('hqnext').classList.remove('hidden');$('hqnext').querySelector('button').onclick=()=>{HQ.i++;hqQ(true)}})}
+function hqIntro(){const el=$('hq');el.innerHTML=`<div class="qhead"><h2>Hören</h2></div><p>Nach dem Einzählen erklingt ein Rhythmus. Wähle das passende Notenbild. Eine Runde hat ${ROUND} Fragen.</p>
+  <div class="row"><label>Was wird gespielt? <select id="hqmode" style="font:inherit;padding:6px 8px;border-radius:8px;border:2px solid var(--line);background:var(--paper);color:var(--ink)">${Object.entries(HQM).map(([v,l])=>`<option value="${v}">${l}</option>`).join('')}</select></label></div>
+  <div class="qbar"><button class="big" id="hqgo">Runde starten</button></div>`;
+  $('hqmode').value=S.hqMode;$('hqmode').onchange=e=>{S.hqMode=+e.target.value;saveS()};$('hqgo').onclick=hqStart}
+
+/* ---------- Taktsprache-Quiz ---------- */
+let TQ=null;
+function tqStart(){if(needSel($('tq'),2))return;TQ={deck:deck(ROUND),dirs:Array.from({length:ROUND},()=>Math.random()<.5),i:0,score:0,missed:[]};tqQ()}
+function tqQ(){const el=$('tq');if(TQ.i>=ROUND){el.innerHTML=resultHTML(TQ,'Taktsprache: Resultat');el.querySelector('[data-act=restart]').onclick=tqStart;return}
+  const id=TQ.deck[TQ.i],d=TQ.dirs[TQ.i],opts=shuffle([id,...shuffle(S.sel.filter(x=>x!==id)).slice(0,3)]);
+  const show=d?`<div class="sheet">${svgBlock(id)}</div>`:`<div class="syl">${sylStr(byId[id])}</div>`;
+  el.innerHTML=`<div class="qhead"><h2>Taktsprache</h2><span class="score">Frage ${TQ.i+1} von ${ROUND} · ${TQ.score} richtig</span></div>
+  <p class="ask">${d?'Wie heisst dieser Baustein in der Taktsprache?':'Welches Notenbild passt zu dieser Taktsprache?'}</p>
+  <div class="show">${show}</div>
+  <div class="opts">${opts.map(o=>d?`<button class="opt txt" data-id="${o}">${sylStr(byId[o])}</button>`:`<button class="opt" data-id="${o}"><div class="sheet">${svgBlock(o)}</div></button>`).join('')}</div>
+  <p class="fb" id="tqfb"></p><div class="qbar hidden" id="tqnext"><button class="big">Weiter</button><button class="ghost" id="tqplay">${playIcon.replace('<svg','<svg width="14" height="14" fill="currentColor"')} Anhören</button></div>`;
+  el.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{const pick=+b.dataset.id,ok=pick===id;
+    el.querySelectorAll('.opt').forEach(o=>{o.disabled=true;if(+o.dataset.id===id)o.classList.add('right');else if(o===b)o.classList.add('wrong')});
+    const fb=$('tqfb');if(ok){TQ.score++;fb.className='fb ok';fb.textContent='Richtig!'}
+    else{fb.className='fb no';fb.textContent=`Leider falsch. Richtig ist ${sylStr(byId[id])}.`;
+      TQ.missed.push(`<div class="mrow"><div class="lbl">Richtig: <b>${byId[id].name}, ${sylStr(byId[id])}</b></div><div class="sheet">${svgBlock(id)}</div><div class="lbl">Deine Wahl: <b>${sylStr(byId[pick])}</b></div>${d?'':`<div class="sheet">${svgBlock(pick)}</div>`}</div>`)}
+    el.querySelector('.score').textContent=`Frage ${TQ.i+1} von ${ROUND} · ${TQ.score} richtig`;
+    $('tqnext').classList.remove('hidden');$('tqnext').querySelector('.big').onclick=()=>{stopAll();TQ.i++;tqQ()};
+    $('tqplay').onclick=()=>playIds(Array(4/byId[id].beats).fill(id))})}
+function tqIntro(){const el=$('tq');el.innerHTML=`<div class="qhead"><h2>Taktsprache</h2></div><p>Mal siehst du ein Notenbild und wählst die Taktsprache, mal ist es umgekehrt. Eine Runde hat ${ROUND} Fragen.</p><div class="qbar"><button class="big" id="tqgo">Runde starten</button></div>`;$('tqgo').onclick=tqStart}
+
+/* ---------- Diktat ---------- */
+let DK=null;
+const sum=ids=>ids.reduce((a,id)=>a+byId[id].beats,0);
+function dkStart(){if(needSel($('dk'),1))return;DK={i:0,score:0,missed:[]};dkQ(true)}
+function dkQ(auto){const el=$('dk');if(DK.i>=ROUND){el.innerHTML=resultHTML(DK,'Diktat: Resultat');el.querySelector('[data-act=restart]').onclick=dkStart;return}
+  const tgt=[];for(let k=0;k<S.bars;k++)tgt.push(...makeBar());DK.tgt=tgt;DK.inp=[];DK.done=false;DK.total=4*S.bars;
+  el.innerHTML=`<div class="qhead"><h2>Diktat</h2><span class="score">Diktat ${DK.i+1} von ${ROUND} · ${DK.score} richtig</span></div>
+  <div class="qbar"><button class="big" id="dkplay">${playIcon} Anhören</button><span class="count" id="dkn"></span></div>
+  <p class="ask">Schreibe auf, was du hörst.</p>
+  <div class="answer"><div class="sheet" id="dkans"></div></div>
+  <p class="count" id="dkbeats"></p>
+  <div class="palette" id="dkpal">${S.sel.map(id=>`<button class="pbtn" data-id="${id}" aria-label="${byId[id].name}"><div class="sheet">${svgBlock(id)}</div></button>`).join('')}</div>
+  <div class="qbar"><button class="ghost" id="dkundo">Rückgängig</button><button class="ghost" id="dkclr">Löschen</button><button class="big" id="dkchk">Prüfen</button></div>
+  <p class="fb" id="dkfb"></p><div id="dkcmp"></div><div class="qbar hidden" id="dknext"><button class="big">Weiter</button></div>`;
+  let plays=0;const play=()=>{plays++;$('dkn').textContent=plays===1?'1-mal gehört':plays+'-mal gehört';playIds(DK.tgt)};
+  $('dkplay').onclick=play;if(auto)play();
+  el.querySelectorAll('.pbtn').forEach(b=>b.onclick=()=>{DK.inp.push(+b.dataset.id);dkDraw()});
+  $('dkundo').onclick=()=>{DK.inp.pop();dkDraw()};$('dkclr').onclick=()=>{DK.inp=[];dkDraw()};
+  $('dkchk').onclick=dkCheck;dkDraw()}
+function dkDraw(){const s=sum(DK.inp),left=DK.total-s,inBar=4-(s%4);
+  $('dkans').innerHTML=DK.inp.length?svgSeq(DK.inp,{total:DK.total,pad:left>0?30:0}):'<span class="count" style="padding:0 10px">Tippe unten auf die Bausteine.</span>';
+  const bar=Math.min(S.bars,Math.floor(s/4)+1);
+  $('dkbeats').textContent=left?(S.bars>1?`Takt ${bar}: noch ${inBar} ${inBar===1?'Schlag':'Schläge'} frei`:`Noch ${left} ${left===1?'Schlag':'Schläge'} frei`):'Fertig. Tippe auf «Prüfen».';
+  document.querySelectorAll('#dkpal .pbtn').forEach(b=>b.disabled=DK.done||!left||byId[+b.dataset.id].beats>inBar);
+  $('dkchk').disabled=DK.done||left>0;$('dkundo').disabled=DK.done||!DK.inp.length;$('dkclr').disabled=DK.done||!DK.inp.length}
+function dkCheck(){DK.done=true;const ok=DK.inp.join()===DK.tgt.join();dkDraw();
+  const fb=$('dkfb');
+  if(ok){DK.score++;fb.className='fb ok';fb.textContent='Richtig!'}else{fb.className='fb no';fb.textContent='Leider nicht ganz. Vergleiche mit der Lösung.'}
+  $('dkcmp').innerHTML=`<div class="cmp">${ok?'':`<div><h3>Deine Lösung</h3><div class="sheet">${svgSeq(DK.inp,{syl:true,final:true})}</div></div>`}<div><h3>Lösung</h3><div class="sheet">${svgSeq(DK.tgt,{syl:true,final:true})}</div></div>
+  <div class="qbar" style="margin:0"><button class="ghost" id="dkagain">${playIcon.replace('<svg','<svg width="14" height="14" fill="currentColor"')} Lösung anhören</button></div></div>`;
+  $('dkagain').onclick=()=>playIds(DK.tgt);
+  if(!ok)DK.missed.push(`<div class="mrow"><div class="lbl">Lösung</div><div class="sheet">${svgSeq(DK.tgt,{syl:true,final:true})}</div><div class="lbl">Deine Lösung</div><div class="sheet">${svgSeq(DK.inp,{syl:true,final:true})}</div></div>`);
+  $('dk').querySelector('.score').textContent=`Diktat ${DK.i+1} von ${ROUND} · ${DK.score} richtig`;
+  $('dknext').classList.remove('hidden');$('dknext').querySelector('button').onclick=()=>{DK.i++;dkQ(true)}}
+function dkIntro(){const el=$('dk');el.innerHTML=`<div class="qhead"><h2>Diktat</h2></div><p>Ein Rhythmus wird nach dem Einzählen vorgespielt. Setze ihn aus den Bausteinen zusammen und prüfe dann. Du kannst ihn so oft anhören, wie du willst.</p>
+  <div class="row"><label>Länge <select id="dkbars" style="font:inherit;padding:6px 8px;border-radius:8px;border:2px solid var(--line);background:var(--paper);color:var(--ink)"><option value="1">1 Takt</option><option value="2">2 Takte</option></select></label></div>
+  <div class="qbar"><button class="big" id="dkgo">Runde starten</button></div>`;
+  $('dkbars').value=S.bars;$('dkbars').onchange=e=>{S.bars=+e.target.value;saveS()};$('dkgo').onclick=dkStart}
+
+/* ---------- Tabs ---------- */
+const intros={hq:hqIntro,tq:tqIntro,dk:dkIntro};
+document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{stopAll();
+  document.querySelectorAll('.tab').forEach(x=>x.setAttribute('aria-selected',x===t));
+  ['lex','hq','tq','dk'].forEach(v=>$('v-'+v).classList.toggle('hidden',v!==t.dataset.v));
+  if(intros[t.dataset.v])intros[t.dataset.v]()});
+hqIntro();tqIntro();dkIntro();
+</script>
+</body>
+</html>
