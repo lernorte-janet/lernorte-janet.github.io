@@ -1,0 +1,78 @@
+# Lernorte: erstellt bei jedem Hochladen die Liste aller Materialien
+# und veröffentlicht die Seite. Hier muss nichts angepasst werden.
+name: Lernorte veröffentlichen
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  veroeffentlichen:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Liste der Materialien erstellen
+        shell: python
+        run: |
+          import os, re, json, html, unicodedata
+          FAECHER = ["mathematik", "deutsch", "musik"]
+          ARTEN = {".html": "App", ".htm": "App", ".pdf": "PDF",
+                   ".mp4": "Video", ".m4v": "Video", ".mov": "Video",
+                   ".png": "Bild", ".jpg": "Bild", ".jpeg": "Bild",
+                   ".mp3": "Audio", ".m4a": "Audio"}
+          nfc = lambda s: unicodedata.normalize("NFC", s)
+          def sortkey(s):
+              return [int(t) if t.isdigit() else t.lower() for t in re.split(r"(\d+)", s)]
+          def lesbar(name):
+              stamm = os.path.splitext(name)[0]
+              return re.sub(r"\s+", " ", stamm.replace("_", " ")).strip()
+          def html_infos(pfad):
+              with open(pfad, encoding="utf-8", errors="ignore") as f:
+                  kopf = f.read(200000)
+              t = re.search(r"<title[^>]*>(.*?)</title>", kopf, re.S | re.I)
+              d = re.search(r'<meta\s+name=["\']description["\']\s+content=["\'](.*?)["\']', kopf, re.S | re.I)
+              return (html.unescape(t.group(1)).strip() if t else ""), (html.unescape(d.group(1)).strip() if d else "")
+          liste = {}
+          for fach in FAECHER:
+              themen = {}
+              if os.path.isdir(fach):
+                  for wurzel, ordner, dateien in os.walk(fach):
+                      ordner[:] = [o for o in ordner if not o.startswith((".", "_"))]
+                      teile = os.path.relpath(wurzel, fach).split(os.sep)
+                      thema = nfc(" / ".join(teile)) if teile != ["."] else "Weitere Materialien"
+                      for d in dateien:
+                          endung = os.path.splitext(d)[1].lower()
+                          if d.startswith((".", "_")) or endung not in ARTEN:
+                              continue
+                          pfad = os.path.join(wurzel, d)
+                          titel, info = (html_infos(pfad) if ARTEN[endung] == "App" else ("", ""))
+                          themen.setdefault(thema, []).append({
+                              "titel": nfc(titel or lesbar(d)), "info": nfc(info),
+                              "datei": pfad.replace(os.sep, "/"), "art": ARTEN[endung]})
+              liste[fach] = [{"thema": t, "eintraege": sorted(e, key=lambda x: sortkey(x["datei"]))}
+                             for t, e in sorted(themen.items(), key=lambda x: sortkey(x[0]))]
+          with open("liste.json", "w", encoding="utf-8") as f:
+              json.dump(liste, f, ensure_ascii=False, indent=1)
+          for fach, th in liste.items():
+              print(fach, sum(len(t["eintraege"]) for t in th), "Materialien")
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+      - id: deployment
+        uses: actions/deploy-pages@v4
