@@ -46,25 +46,48 @@ jobs:
               t = re.search(r"<title[^>]*>(.*?)</title>", kopf, re.S | re.I)
               d = re.search(r'<meta\s+name=["\']description["\']\s+content=["\'](.*?)["\']', kopf, re.S | re.I)
               return (html.unescape(t.group(1)).strip() if t else ""), (html.unescape(d.group(1)).strip() if d else "")
-          liste = {}
+          # Bestehende Apps auf der Hauptebene (Adresse bleibt gleich)
+          FEST = {"schreibwerkstatt.html": ("deutsch", "Aufsätze überarbeiten"),
+                  "instrumente.html": ("musik", "Instrumente"),
+                  "rhythmus.html": ("musik", "Rhythmus")}
+          KUERZEL = {"mathe": "mathematik", "mathematik": "mathematik",
+                     "deutsch": "deutsch", "musik": "musik"}
+          gefunden = {f: {} for f in FAECHER}
+          def eintragen(fach, thema, pfad, name, titel_vorgabe=""):
+              endung = os.path.splitext(name)[1].lower()
+              titel, info = (html_infos(pfad) if ARTEN[endung] == "App" else ("", ""))
+              gefunden[fach].setdefault(nfc(thema), []).append({
+                  "titel": nfc(titel or titel_vorgabe or lesbar(name)), "info": nfc(info),
+                  "datei": pfad.replace(os.sep, "/"), "art": ARTEN[endung]})
+          # 1) Dateien auf der Hauptebene: Fach_Thema_Titel.pdf
+          for d in os.listdir("."):
+              endung = os.path.splitext(d)[1].lower()
+              if not os.path.isfile(d) or endung not in ARTEN or d.startswith((".", "_")):
+                  continue
+              if d in FEST:
+                  eintragen(FEST[d][0], FEST[d][1], d, d)
+                  continue
+              teile = os.path.splitext(d)[0].split("_")
+              fach = KUERZEL.get(nfc(teile[0]).strip().lower())
+              if fach and len(teile) >= 3:
+                  eintragen(fach, teile[1].strip(), d, d, " ".join(teile[2:]).strip())
+              elif fach and len(teile) == 2:
+                  eintragen(fach, "Weitere Materialien", d, d, teile[1].strip())
+          # 2) Dateien in Ordnern: mathematik/Thema/datei.pdf
           for fach in FAECHER:
-              themen = {}
-              if os.path.isdir(fach):
-                  for wurzel, ordner, dateien in os.walk(fach):
-                      ordner[:] = [o for o in ordner if not o.startswith((".", "_"))]
-                      teile = os.path.relpath(wurzel, fach).split(os.sep)
-                      thema = nfc(" / ".join(teile)) if teile != ["."] else "Weitere Materialien"
-                      for d in dateien:
-                          endung = os.path.splitext(d)[1].lower()
-                          if d.startswith((".", "_")) or endung not in ARTEN:
-                              continue
-                          pfad = os.path.join(wurzel, d)
-                          titel, info = (html_infos(pfad) if ARTEN[endung] == "App" else ("", ""))
-                          themen.setdefault(thema, []).append({
-                              "titel": nfc(titel or lesbar(d)), "info": nfc(info),
-                              "datei": pfad.replace(os.sep, "/"), "art": ARTEN[endung]})
-              liste[fach] = [{"thema": t, "eintraege": sorted(e, key=lambda x: sortkey(x["datei"]))}
-                             for t, e in sorted(themen.items(), key=lambda x: sortkey(x[0]))]
+              if not os.path.isdir(fach):
+                  continue
+              for wurzel, ordner, dateien in os.walk(fach):
+                  ordner[:] = [o for o in ordner if not o.startswith((".", "_"))]
+                  teile = os.path.relpath(wurzel, fach).split(os.sep)
+                  thema = " / ".join(teile) if teile != ["."] else "Weitere Materialien"
+                  for d in dateien:
+                      if d.startswith((".", "_")) or os.path.splitext(d)[1].lower() not in ARTEN:
+                          continue
+                      eintragen(fach, thema, os.path.join(wurzel, d), d)
+          liste = {f: [{"thema": t, "eintraege": sorted(e, key=lambda x: sortkey(x["datei"]))}
+                       for t, e in sorted(th.items(), key=lambda x: sortkey(x[0]))]
+                   for f, th in gefunden.items()}
           with open("liste.json", "w", encoding="utf-8") as f:
               json.dump(liste, f, ensure_ascii=False, indent=1)
           for fach, th in liste.items():
