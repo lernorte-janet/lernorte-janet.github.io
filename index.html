@@ -5,9 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Lernorte</title>
 <style>
-/* ================================================================
-   Hier den Namen anpassen: steht oben auf der Seite.
-   ================================================================ */
 :root {
   --ink: #1b1f24;
   --muted: #5d6570;
@@ -128,51 +125,20 @@ footer { margin-top: 40px; color: var(--muted); font-size: 0.85rem; }
 
 <script>
 /* ================================================================
-   HIER ANPASSEN
-   1. Deinen Namen eintragen.
-   2. Neue Materialien: Datei in den passenden Ordner hochladen
-      und unten einen Eintrag ergänzen (Titel, Info, Datei, Art).
-   Ist eine Datei noch nicht hochgeladen, erscheint der Eintrag
-   automatisch grau mit «kommt bald».
+   Lernorte
+   Neue Materialien einfach in den passenden Ordner hochladen:
+     mathematik/<Thema>/datei.pdf
+     deutsch/<Thema>/app.html
+     musik/<Thema>/...
+   Die Liste (liste.json) wird nach dem Hochladen automatisch
+   neu erstellt. Hier muss nichts mehr ergänzt werden.
    ================================================================ */
 const NAME = "Janet";
 
 const FAECHER = {
-  mathematik: {
-    titel: "Mathematik", stil: "mathe", farbe: "var(--mathe)",
-    themen: [
-      { thema: "2b Variablen", eintraege: [
-        { titel: "Aufgabe 1: Kugeln in Säcken", info: "Themenbuch S. 24 · Erklärung und Tipps",
-          datei: "mathe/2b_S24_Aufgabe1_Tipps.pdf", art: "PDF" },
-        { titel: "Aufgabe 1.1 a–c: Terme auf Etiketten", info: "Arbeitsheft S. 44 · Erklärung und Tipps",
-          datei: "mathe/2b_S44_Aufgabe1-1abc_Tipps.pdf", art: "PDF" },
-        { titel: "Aufgaben 1.1 d–e und 1.2 a", info: "Arbeitsheft S. 45 · Erklärung und Tipps",
-          datei: "mathe/2b_S45_Aufgabe1-1de_1-2a_Tipps.pdf", art: "PDF" }
-      ]}
-    ]
-  },
-  deutsch: {
-    titel: "Deutsch", stil: "deutsch", farbe: "var(--deutsch)",
-    themen: [
-      { thema: "Aufsätze überarbeiten", eintraege: [
-        { titel: "Schreibwerkstatt", info: "Erzählung, Zusammenfassung, Stellungnahme, Erörterung überarbeiten",
-          datei: "schreibwerkstatt.html", art: "App" }
-      ]}
-    ]
-  },
-  musik: {
-    titel: "Musik", stil: "musik", farbe: "var(--musik)",
-    themen: [
-      { thema: "Instrumente", eintraege: [
-        { titel: "Instrumentenkunde", info: "Instrumente kennenlernen und erkennen",
-          datei: "instrumente.html", art: "App" }
-      ]},
-      { thema: "Rhythmus", eintraege: [
-        { titel: "Rhythmus-Trainer", info: "Bausteine, Hören, Taktsprache, Diktat",
-          datei: "rhythmus.html", art: "App" }
-      ]}
-    ]
-  }
+  mathematik: { titel: "Mathematik", stil: "mathe",   farbe: "var(--mathe)" },
+  deutsch:    { titel: "Deutsch",    stil: "deutsch", farbe: "var(--deutsch)" },
+  musik:      { titel: "Musik",      stil: "musik",   farbe: "var(--musik)" }
 };
 
 /* ---------- ab hier nichts ändern ---------- */
@@ -180,20 +146,21 @@ document.getElementById("name").textContent = NAME;
 document.getElementById("fuss").textContent = "Lernorte von " + NAME;
 document.title = "Lernorte · " + NAME;
 
-const vorhanden = {};
-async function pruefen(datei) {
-  if (datei in vorhanden) return vorhanden[datei];
-  try {
-    const r = await fetch(datei, { method: "HEAD", cache: "no-store" });
-    // Nur eine klare «nicht gefunden»-Antwort gilt als fehlend.
-    vorhanden[datei] = r.status !== 404;
-  } catch (e) { vorhanden[datei] = true; }
-  return vorhanden[datei];
-}
+let LISTE = null;
+const pfadUrl = p => p.split("/").map(encodeURIComponent).join("/");
 
-for (const [id, f] of Object.entries(FAECHER)) {
-  const n = f.themen.reduce((s, t) => s + t.eintraege.length, 0);
-  document.getElementById("z-" + id).textContent = n === 1 ? "1 Material" : n + " Materialien";
+async function laden() {
+  try {
+    const r = await fetch("liste.json", { cache: "no-store" });
+    if (!r.ok) throw new Error(r.status);
+    LISTE = await r.json();
+  } catch (e) { LISTE = {}; }
+  for (const id of Object.keys(FAECHER)) {
+    const n = (LISTE[id] || []).reduce((s, t) => s + t.eintraege.length, 0);
+    document.getElementById("z-" + id).textContent =
+      n === 0 ? "Noch keine Materialien" : n === 1 ? "1 Material" : n + " Materialien";
+  }
+  zeigen();
 }
 
 function zeigen() {
@@ -201,17 +168,18 @@ function zeigen() {
   const f = FAECHER[id];
   document.getElementById("start").hidden = !!f;
   document.getElementById("fach").hidden = !f;
-  if (!f) return;
+  if (!f || !LISTE) return;
   const kopf = document.getElementById("fachkopf");
   kopf.className = "fachkopf ort " + f.stil;
   document.getElementById("fachtitel").textContent = f.titel;
   const themen = document.getElementById("themen");
   themen.innerHTML = "";
   themen.style.setProperty("--akzent", f.farbe);
-  if (!f.themen.length) {
+  const liste = LISTE[id] || [];
+  if (!liste.length) {
     themen.innerHTML = '<p class="leer">Hier kommen bald Materialien.</p>';
   }
-  for (const t of f.themen) {
+  for (const t of liste) {
     const sec = document.createElement("section");
     sec.className = "thema";
     sec.innerHTML = "<h3></h3><ul class='liste'></ul>";
@@ -221,14 +189,11 @@ function zeigen() {
       const li = document.createElement("li");
       const a = document.createElement("a");
       a.className = "eintrag";
-      a.href = e.datei;
+      a.href = pfadUrl(e.datei);
       a.innerHTML = "<span class='text'><strong></strong><small></small></span><span class='art'></span>";
       a.querySelector("strong").textContent = e.titel;
       a.querySelector("small").textContent = e.info;
       a.querySelector(".art").textContent = e.art;
-      pruefen(e.datei).then(ok => {
-        if (!ok) { a.classList.add("spaeter"); a.querySelector(".art").textContent = "kommt bald"; a.removeAttribute("href"); }
-      });
       li.appendChild(a); ul.appendChild(li);
     }
     themen.appendChild(sec);
@@ -236,7 +201,7 @@ function zeigen() {
   window.scrollTo(0, 0);
 }
 window.addEventListener("hashchange", zeigen);
-zeigen();
+laden();
 </script>
 </body>
 </html>
