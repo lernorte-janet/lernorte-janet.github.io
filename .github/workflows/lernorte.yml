@@ -29,7 +29,7 @@ jobs:
         shell: python
         run: |
           import os, re, json, html, unicodedata
-          FAECHER = ["mathematik", "deutsch", "musik"]
+          FAECHER = ["mathematik", "deutsch", "nt", "musik"]
           ARTEN = {".html": "App", ".htm": "App", ".pdf": "PDF",
                    ".mp4": "Video", ".m4v": "Video", ".mov": "Video",
                    ".png": "Bild", ".jpg": "Bild", ".jpeg": "Bild",
@@ -51,7 +51,8 @@ jobs:
                   "instrumente.html": ("musik", "Instrumente"),
                   "rhythmus.html": ("musik", "Rhythmus")}
           KUERZEL = {"mathe": "mathematik", "mathematik": "mathematik",
-                     "deutsch": "deutsch", "musik": "musik"}
+                     "deutsch": "deutsch", "musik": "musik",
+                     "nt": "nt", "natur und technik": "nt"}
           gefunden = {f: {} for f in FAECHER}
           def eintragen(fach, thema, pfad, name, titel_vorgabe=""):
               endung = os.path.splitext(name)[1].lower()
