@@ -1,0 +1,454 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Die pflanzliche Zelle – Begriffe zuordnen</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#EEF3E8; --surface:#FFFFFF; --ink:#1C2A20; --muted:#55635A;
+  --accent:#1F5A2E; --accent-ink:#FFFFFF; --accent-soft:#DCEBCF;
+  --ok:#2C7A34; --ok-soft:#DCF0D8; --bad:#B3261E; --bad-soft:#F9DEDA;
+  --near:#9A5800; --near-soft:#FBEACB; --line:#CFD9C6; --paper:#FFFFFF;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#111912; --surface:#1A241C; --ink:#E5EDE3; --muted:#A2B1A5;
+    --accent:#8CC788; --accent-ink:#0F1A11; --accent-soft:#25392A;
+    --ok:#7CC67F; --ok-soft:#1D3A22; --bad:#F2897F; --bad-soft:#44201C;
+    --near:#E9B25E; --near-soft:#3E2E14; --line:#304034; --paper:#F4F7F0;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#111912; --surface:#1A241C; --ink:#E5EDE3; --muted:#A2B1A5;
+  --accent:#8CC788; --accent-ink:#0F1A11; --accent-soft:#25392A;
+  --ok:#7CC67F; --ok-soft:#1D3A22; --bad:#F2897F; --bad-soft:#44201C;
+  --near:#E9B25E; --near-soft:#3E2E14; --line:#304034; --paper:#F4F7F0;
+}
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:'Source Sans 3','Segoe UI',system-ui,-apple-system,sans-serif;font-size:17px;line-height:1.45;-webkit-tap-highlight-color:transparent}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.wrap{max-width:1080px;margin:0 auto;padding:20px 18px 40px}
+header h1{font-family:Fraunces,Georgia,serif;font-weight:700;font-size:clamp(28px,4.5vw,40px);line-height:1.1;margin:0;color:var(--accent)}
+header p{margin:6px 0 0;color:var(--muted)}
+
+.levels{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:20px 0 16px}
+.lv{display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:left;padding:10px 12px;border-radius:12px;border:2px solid var(--line);background:var(--surface)}
+.lv b{font-family:Fraunces,Georgia,serif;font-size:18px}
+.lv span{font-size:14px;color:var(--muted);line-height:1.25}
+.lv[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft)}
+.lv .dots{letter-spacing:2px;color:var(--accent);font-size:13px}
+@media (max-width:640px){.levels{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+.bar{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:6px 16px;margin-bottom:12px}
+.task{font-weight:600;font-size:18px;margin:0}
+.stats{color:var(--muted);font-size:15px;white-space:nowrap}
+
+.play{display:grid;gap:18px;align-items:start}
+@media (min-width:820px){.play.two{grid-template-columns:minmax(0,1.05fr) minmax(0,1fr)}}
+.drawing{background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:8px}
+.drawing svg{display:block;width:100%;height:auto;max-height:62vh}
+.drawing.small svg{max-height:40vh}
+
+.bank{display:flex;flex-wrap:wrap;gap:8px;padding:12px;border-radius:14px;background:var(--accent-soft);min-height:58px;margin-bottom:12px}
+.bank:empty::after{content:"Alle Wörter sind verteilt.";color:var(--muted);align-self:center}
+.chip{border:2px solid var(--line);background:var(--surface);border-radius:999px;padding:7px 16px;font-weight:700;font-size:17px;user-select:none;-webkit-user-select:none}
+.chip.sel{border-color:var(--accent);background:var(--accent);color:var(--accent-ink)}
+.chip.done{border-color:var(--ok);background:var(--ok-soft);color:var(--ok);cursor:default}
+
+.slots{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.slot{width:100%;display:flex;align-items:center;gap:12px;text-align:left;padding:8px 12px;border-radius:12px;border:2px solid var(--line);background:var(--surface);min-height:50px}
+.slot .txt{flex:1;border-bottom:2px dashed var(--line);min-height:26px;font-weight:700}
+.slot.sel{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.slot.ok{border-color:var(--ok);background:var(--ok-soft);cursor:default}
+.slot.ok .txt{border-bottom-color:transparent;color:var(--ok)}
+.num{flex-shrink:0;width:30px;height:30px;border-radius:50%;background:var(--accent);color:var(--accent-ink);font-weight:700;display:flex;align-items:center;justify-content:center;font-size:15px}
+.slot.ok .num{background:var(--ok)}
+
+.descs{display:grid;gap:8px}
+.desc{width:100%;text-align:left;padding:10px 14px;border-radius:12px;border:2px solid var(--line);background:var(--surface);line-height:1.35}
+.desc.sel{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.desc.ok{border-color:var(--ok);background:var(--ok-soft);cursor:default}
+.desc .tag{display:block;font-weight:700;color:var(--ok);margin-bottom:2px}
+
+.inrow{display:flex;align-items:center;gap:10px;padding:6px 0}
+.inrow input{flex:1;min-width:0;padding:9px 12px;border-radius:10px;border:2px solid var(--line);background:var(--surface);font-size:17px;font-weight:600}
+.inrow.ok input{border-color:var(--ok);background:var(--ok-soft);color:var(--ok)}
+.inrow.bad input,.inrow.empty input{border-color:var(--bad);background:var(--bad-soft)}
+.inrow.near input{border-color:var(--near);background:var(--near-soft)}
+.inrow.solved input{border-color:var(--muted);color:var(--muted)}
+.hint{font-size:14px;margin:-2px 0 4px 40px;min-height:0}
+.hint.bad{color:var(--bad)} .hint.near{color:var(--near)} .hint.solved{color:var(--muted)}
+
+.bins{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.bin{display:flex;flex-direction:column;align-items:stretch;gap:8px;text-align:left;padding:14px;border-radius:14px;border:2px dashed var(--line);background:var(--surface);min-height:200px}
+.bin h3{margin:0 0 4px;font-family:Fraunces,Georgia,serif;font-size:19px;line-height:1.2}
+.bin.ready{border-color:var(--accent);border-style:solid;box-shadow:0 0 0 3px var(--accent-soft)}
+.bin .chip{align-self:flex-start}
+
+.actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
+.btn{border:2px solid var(--accent);background:var(--accent);color:var(--accent-ink);font-weight:700;padding:10px 18px;border-radius:12px}
+.btn.ghost{background:transparent;color:var(--accent)}
+.fb{min-height:26px;margin:12px 0 0;font-weight:600}
+.fb.bad{color:var(--bad)} .fb.ok{color:var(--ok)}
+
+.result{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:28px 22px;text-align:center;max-width:560px;margin:10px auto}
+.result h2{font-family:Fraunces,Georgia,serif;font-size:32px;margin:0 0 6px;color:var(--accent)}
+.stars{font-size:44px;letter-spacing:6px;margin:6px 0 10px;color:#D8A31A}
+.stars .off{color:var(--line)}
+.result .actions{justify-content:center}
+
+/* SVG-Markierungen */
+.mk .badge{fill:#1F5A2E}
+.mk text{fill:#FFFFFF;font-weight:700;font-size:15px;pointer-events:none;font-family:'Source Sans 3',system-ui,sans-serif}
+.mk .hit{fill:transparent}
+.mk.tap{cursor:pointer}
+.mk.sel .badge,.mk.hl .badge{fill:#E08A00}
+.mk.sel .ring,.mk.hl .ring{stroke:#E08A00;stroke-width:4;fill:none}
+.mk.ok .badge{fill:#2C7A34}
+.mk .ring{fill:none;stroke:none}
+.mk.tap:focus{outline:none}
+.mk.tap:focus-visible .ring{stroke:#1F5A2E;stroke-width:4}
+
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-6px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
+.shake{animation:shake .35s ease;border-color:var(--bad)!important}
+@keyframes pop{0%{transform:scale(.96)}100%{transform:scale(1)}}
+.pop{animation:pop .25s ease}
+@media (prefers-reduced-motion:reduce){.shake,.pop{animation:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Die pflanzliche Zelle</h1>
+    <p>Ordne die Begriffe zu. Wähle eine Stufe.</p>
+  </header>
+  <nav class="levels" id="levels" aria-label="Stufe wählen"></nav>
+  <main id="stage"></main>
+</div>
+
+<script>
+const P = [
+  {id:'wand', name:'Zellwand', sort:'Zellwand', plant:true, side:'L', n:[126,92], d:[200,92],
+   desc:'Feste Hülle aus Cellulose. Sie gibt der Zelle Form und Halt.',
+   acc:['zellwand']},
+  {id:'kern', name:'Zellkern', sort:'Zellkern', plant:false, side:'L', n:[126,150], d:[280,150],
+   desc:'Die Steuerzentrale der Zelle. Hier liegt die Erbinformation.',
+   acc:['zellkern','kern','nucleus','nukleus']},
+  {id:'mito', name:'Mitochondrien', sort:'Mitochondrien', plant:false, side:'L', n:[126,290], d:[200,290],
+   desc:'Die Kraftwerke der Zelle. Sie gewinnen Energie aus Zucker.',
+   acc:['mitochondrien','mitochondrium','mitochondrion']},
+  {id:'vak', name:'Vakuole', sort:'Grosse Vakuole', plant:true, side:'L', n:[126,345], d:[290,345],
+   desc:'Grosser Speicher, gefüllt mit Zellsaft. Er hält die Zelle prall.',
+   acc:['vakuole','vakuolen','grossevakuole','zentralvakuole']},
+  {id:'mem', name:'Zellmembran', sort:'Zellmembran', plant:false, side:'R', n:[572,118], d:[475,118],
+   desc:'Dünne Haut direkt unter der Zellwand. Sie bestimmt, welche Stoffe hinein und hinaus gelangen.',
+   acc:['zellmembran','membran','plasmamembran']},
+  {id:'flu', name:'Zellflüssigkeit', sort:'Zellflüssigkeit', plant:false, side:'R', n:[572,250], d:[500,250],
+   desc:'Füllt die Zelle aus. Darin liegen alle anderen Bestandteile.',
+   acc:['zellflüssigkeit','zellplasma','cytoplasma','zytoplasma','plasma','cytosol','zytosol']},
+  {id:'chl', name:'Blattgrünkorn', sort:'Blattgrünkörner', plant:true, side:'R', n:[572,300], d:[492,300],
+   desc:'Hier läuft die Fotosynthese ab: Aus Licht, Wasser und CO₂ entstehen Zucker und Sauerstoff.',
+   acc:['blattgrünkorn','blattgrünkörner','chloroplast','chloroplasten']},
+];
+const byId = Object.fromEntries(P.map(p => [p.id, p]));
+
+const MODES = [
+  {key:'s1', title:'Stufe 1', sub:'Beschriften mit Wörterkasten', dots:'●○○'},
+  {key:'s2', title:'Stufe 2', sub:'Aufgaben der Bestandteile', dots:'●●○'},
+  {key:'s3', title:'Stufe 3', sub:'Beschriften ohne Hilfe', dots:'●●●'},
+  {key:'x',  title:'Extra',   sub:'Nur in der Pflanzenzelle?', dots:'★'},
+];
+
+let mode = 's1';
+let S = {};
+let flash = [];
+
+function shuffle(a){ a = a.slice(); for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; }
+function norm(s){ return s.toLowerCase().replace(/ä/g,'a').replace(/ö/g,'o').replace(/ü/g,'u').replace(/ß/g,'ss').replace(/[^a-z]/g,''); }
+function lev(a,b){
+  const m=a.length,n=b.length; if(!m) return n; if(!n) return m;
+  let prev=Array.from({length:n+1},(_,j)=>j);
+  for(let i=1;i<=m;i++){ const cur=[i]; for(let j=1;j<=n;j++){ cur[j]=Math.min(prev[j]+1,cur[j-1]+1,prev[j-1]+(a[i-1]===b[j-1]?0:1)); } prev=cur; }
+  return prev[n];
+}
+function judge(id, val){
+  const v = norm(val); if(!v) return 'empty';
+  const acc = byId[id].acc.map(norm);
+  if(acc.includes(v)) return 'ok';
+  const tol = v.length >= 8 ? 2 : 1;
+  if(acc.some(a => lev(a,v) <= tol)) return 'near';
+  return 'bad';
+}
+function numbering(){ const o = shuffle(P.map(p=>p.id)); const m = {}; o.forEach((id,i)=>m[id]=i+1); return m; }
+
+function newRound(){
+  flash = [];
+  if(mode==='s1') S = {nums:numbering(), chips:shuffle(P.map(p=>p.id)), placed:{}, selChip:null, selSlot:null, errors:0, fb:'', fbk:'', done:false};
+  if(mode==='s2') S = {terms:shuffle(P.map(p=>p.id)), descs:shuffle(P.map(p=>p.id)), matched:{}, selTerm:null, selDesc:null, errors:0, fb:'', fbk:'', done:false};
+  if(mode==='s3') S = {nums:numbering(), vals:{}, res:{}, checks:0, errors:0, solved:false, fb:'', fbk:'', done:false};
+  if(mode==='x')  S = {chips:shuffle(P.map(p=>p.id)), placed:{}, sel:null, errors:0, fb:'', fbk:'', done:false};
+}
+
+/* ---------- Zeichnung ---------- */
+function cellSVG({nums=null, cls={}, tap=false}){
+  const lines = P.map(p => `<line x1="${p.side==='L'?138:560}" y1="${p.n[1]}" x2="${p.d[0]}" y2="${p.d[1]}"/>`).join('');
+  const dots = P.map(p => `<circle cx="${p.d[0]}" cy="${p.d[1]}" r="3.5"/>`).join('');
+  const marks = P.map(p => {
+    const label = nums ? nums[p.id] : '';
+    const c = cls[p.id] || '';
+    const a = tap ? `class="mk tap ${c}" data-act="slot" data-id="${p.id}" role="button" tabindex="0" aria-label="Nummer ${label}"` : `class="mk ${c}"`;
+    return `<g ${a}>
+      <circle class="hit" cx="${p.n[0]}" cy="${p.n[1]}" r="24"/>
+      <circle class="ring" cx="${p.n[0]}" cy="${p.n[1]}" r="18"/>
+      <circle class="badge" cx="${p.n[0]}" cy="${p.n[1]}" r="13"/>
+      <text x="${p.n[0]}" y="${p.n[1]+5}" text-anchor="middle">${label}</text>
+    </g>`;
+  }).join('');
+  const chlor = [[245,70,-25],[365,72,8],[438,125,60],[196,215,80],[196,385,80],[232,420,30],[482,300,80],[450,405,40]]
+    .map(([x,y,r]) => `<g transform="translate(${x} ${y}) rotate(${r})"><ellipse rx="24" ry="14" fill="#7CB65A" stroke="#3E7D2E" stroke-width="2.5"/></g>`).join('');
+  const mito = [[205,300,85],[472,185,-70]]
+    .map(([x,y,r]) => `<g transform="translate(${x} ${y}) rotate(${r})"><ellipse rx="30" ry="14" fill="#F08D7C" stroke="#A82D22" stroke-width="2.5"/><path d="M-21 0 q3 -9 6 0 t6 0 t6 0 t6 0 t6 0 t6 0 t6 0" fill="none" stroke="#A82D22" stroke-width="2" stroke-linecap="round"/></g>`).join('');
+  const poly = "270,26 450,52 528,200 505,420 395,478 190,462 150,300 170,120";
+  return `<svg viewBox="112 28 476 446" role="img" aria-label="Zeichnung einer Pflanzenzelle mit Markierungen" xmlns="http://www.w3.org/2000/svg">
+   <g transform="translate(349 250) scale(0.9) translate(-349 -250)">
+    <polygon points="${poly}" fill="#FFF6B3" stroke="#8A5A2B" stroke-width="14" stroke-linejoin="round"/>
+    <polygon points="${poly}" transform="translate(349 250) scale(0.95) translate(-349 -250)" fill="none" stroke="#E08A3C" stroke-width="3" stroke-linejoin="round"/>
+    <path d="M300 232 C270 236 250 290 252 350 C254 410 300 445 350 425 C410 400 440 330 452 270 C458 235 440 215 410 218 C380 222 350 240 320 228 C312 226 306 228 300 232 Z" fill="#C4E3F5" stroke="#5B9DBF" stroke-width="2.5" stroke-linejoin="round"/>
+    <circle cx="330" cy="150" r="52" fill="#F4B8B0" stroke="#D9776A" stroke-width="2.5"/>
+    <g fill="none" stroke="#6B3FA0" stroke-width="2" stroke-linecap="round">
+      <path d="M298 148 c8 -22 24 -22 30 -8 s8 24 22 12 s4 -30 -10 -34 s-30 10 -22 30 s26 18 34 4"/>
+      <path d="M312 172 c14 12 30 10 40 -6 s4 -22 -8 -24"/>
+    </g>
+    ${mito}${chlor}
+    <g stroke="#1F2A22" stroke-width="1.6" fill="none">${lines}</g>
+    <g fill="#1F2A22" stroke="#FFFFFF" stroke-width="1">${dots}</g>
+    ${marks}
+   </g>
+  </svg>`;
+}
+
+/* ---------- Ansichten ---------- */
+function statsHTML(done, errors){ return `<span class="stats">${done} von 7 richtig, Fehlversuche: ${errors}</span>`; }
+
+function viewS1(){
+  const cls = {};
+  P.forEach(p => { if(S.placed[p.id]) cls[p.id]='ok'; else if(S.selSlot===p.id) cls[p.id]='sel'; });
+  const chips = S.chips.filter(id => !S.placed[id])
+    .map(id => `<button class="chip ${S.selChip===id?'sel':''}" data-act="chip" data-id="${id}">${byId[id].name}</button>`).join('');
+  const order = P.slice().sort((a,b)=>S.nums[a.id]-S.nums[b.id]);
+  const slots = order.map(p => {
+    const ok = S.placed[p.id];
+    return `<li><button class="slot ${ok?'ok':''} ${S.selSlot===p.id?'sel':''}" data-act="slot" data-id="${p.id}" ${ok?'disabled':''}>
+      <span class="num">${S.nums[p.id]}</span><span class="txt">${ok?p.name:''}</span></button></li>`;
+  }).join('');
+  return `<div class="bar"><p class="task">Tippe ein Wort an und dann die passende Nummer.</p>${statsHTML(Object.keys(S.placed).length,S.errors)}</div>
+  <div class="play two">
+    <div class="drawing">${cellSVG({nums:S.nums, cls, tap:true})}</div>
+    <div><div class="bank">${chips}</div><ol class="slots">${slots}</ol>
+    <p class="fb ${S.fbk}" aria-live="polite">${S.fb}</p></div>
+  </div>`;
+}
+
+function viewS2(){
+  const cls = {};
+  P.forEach(p => { if(S.matched[p.id]) cls[p.id]='ok'; });
+  if(S.selTerm) cls[S.selTerm]='hl';
+  const terms = S.terms.filter(id => !S.matched[id])
+    .map(id => `<button class="chip ${S.selTerm===id?'sel':''}" data-act="term" data-id="${id}">${byId[id].name}</button>`).join('');
+  const descs = S.descs.map(id => {
+    const ok = S.matched[id];
+    return `<button class="desc ${ok?'ok':''} ${S.selDesc===id?'sel':''}" data-act="desc" data-id="${id}" ${ok?'disabled':''}>
+      ${ok?`<span class="tag">${byId[id].name}</span>`:''}${byId[id].desc}</button>`;
+  }).join('');
+  return `<div class="bar"><p class="task">Welcher Bestandteil hat welche Aufgabe? Tippe einen Begriff und dann die passende Beschreibung.</p>${statsHTML(Object.keys(S.matched).length,S.errors)}</div>
+  <div class="play two">
+    <div class="drawing small">${cellSVG({cls})}</div>
+    <div><div class="bank">${terms}</div><div class="descs">${descs}</div>
+    <p class="fb ${S.fbk}" aria-live="polite">${S.fb}</p></div>
+  </div>`;
+}
+
+function viewS3(){
+  const cls = {};
+  P.forEach(p => { if(S.res[p.id]==='ok') cls[p.id]='ok'; });
+  const order = P.slice().sort((a,b)=>S.nums[a.id]-S.nums[b.id]);
+  const rows = order.map(p => {
+    const r = S.solved && S.res[p.id]!=='ok' ? 'solved' : (S.res[p.id]||'');
+    const val = S.solved && S.res[p.id]!=='ok' ? p.name : (S.vals[p.id]||'');
+    let hint = '';
+    if(r==='bad') hint = 'Stimmt noch nicht.';
+    if(r==='near') hint = 'Fast! Prüfe die Schreibweise.';
+    if(r==='empty') hint = 'Noch leer.';
+    if(r==='solved') hint = 'Lösung';
+    return `<div><label class="inrow ${r}"><span class="num">${S.nums[p.id]}</span>
+      <input data-id="${p.id}" value="${val.replace(/"/g,"&quot;").replace(/</g,"&lt;")}" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" ${(r==='ok'||S.solved)?'readonly':''} aria-label="Bestandteil Nummer ${S.nums[p.id]}"></label>
+      ${hint?`<div class="hint ${r==='empty'?'bad':r}">${hint}</div>`:''}</div>`;
+  }).join('');
+  const okCount = P.filter(p=>S.res[p.id]==='ok').length;
+  return `<div class="bar"><p class="task">Schreibe zu jeder Nummer den richtigen Namen.</p>${statsHTML(okCount,S.errors)}</div>
+  <div class="play two">
+    <div class="drawing">${cellSVG({nums:S.nums, cls})}</div>
+    <div>${rows}
+      <div class="actions">
+        ${S.solved ? `<button class="btn" data-act="finish">Weiter</button>` : `<button class="btn" data-act="check">Prüfen</button>`}
+        ${S.checks>=1 && !S.solved ? `<button class="btn ghost" data-act="solve">Lösung zeigen</button>` : ''}
+      </div>
+      <p class="fb ${S.fbk}" aria-live="polite">${S.fb}</p>
+    </div>
+  </div>`;
+}
+
+function viewX(){
+  const chips = S.chips.filter(id => !S.placed[id])
+    .map(id => `<button class="chip ${S.sel===id?'sel':''}" data-act="xchip" data-id="${id}">${byId[id].sort}</button>`).join('');
+  const bin = (plant, title) => {
+    const items = P.filter(p => S.placed[p.id] && p.plant===plant).map(p => `<span class="chip done">${p.sort}</span>`).join('');
+    return `<button class="bin ${S.sel?'ready':''}" data-act="bin" data-plant="${plant}"><h3>${title}</h3>${items}</button>`;
+  };
+  return `<div class="bar"><p class="task">Kommt der Bestandteil nur in der Pflanzenzelle vor oder auch in der Tierzelle? Tippe ein Wort und dann das passende Feld.</p>${statsHTML(Object.keys(S.placed).length,S.errors)}</div>
+  <div class="bank">${chips}</div>
+  <div class="bins">${bin(true,'Nur in der Pflanzenzelle')}${bin(false,'In Pflanzen- und Tierzelle')}</div>
+  <p class="fb ${S.fbk}" aria-live="polite">${S.fb}</p>`;
+}
+
+function viewResult(){
+  const e = S.errors, solved = !!S.solved;
+  const stars = solved ? 1 : (e===0 ? 3 : e<=2 ? 2 : 1);
+  const starHTML = '★'.repeat(stars) + `<span class="off">${'★'.repeat(3-stars)}</span>`;
+  const msg = solved ? 'Du hast dir die Lösung angeschaut. Versuch es gleich nochmals ohne.'
+    : e===0 ? 'Alles auf Anhieb richtig.'
+    : `Alles zugeordnet, mit ${e} Fehlversuch${e===1?'':'en'}.`;
+  const idx = MODES.findIndex(m=>m.key===mode);
+  const next = MODES[idx+1];
+  return `<div class="result pop">
+    <h2>${solved ? 'Fertig' : 'Geschafft!'}</h2>
+    <div class="stars" aria-label="${stars} von 3 Sternen">${starHTML}</div>
+    <p>${msg}</p>
+    <div class="actions">
+      <button class="btn ${next?'ghost':''}" data-act="again">Nochmals, neu gemischt</button>
+      ${next ? `<button class="btn" data-act="mode" data-mode="${next.key}">Weiter: ${next.title}</button>` : ''}
+    </div>
+  </div>`;
+}
+
+function render(){
+  document.getElementById('levels').innerHTML = MODES.map(m =>
+    `<button class="lv" data-act="mode" data-mode="${m.key}" aria-pressed="${m.key===mode}">
+      <b>${m.title}</b><span>${m.sub}</span><span class="dots" aria-hidden="true">${m.dots}</span></button>`).join('');
+  const st = document.getElementById('stage');
+  if(S.done) st.innerHTML = viewResult();
+  else st.innerHTML = mode==='s1'?viewS1():mode==='s2'?viewS2():mode==='s3'?viewS3():viewX();
+  flash.forEach(sel => st.querySelectorAll(sel).forEach(el => {
+    el.classList.add('shake'); el.addEventListener('animationend', () => el.classList.remove('shake'), {once:true});
+  }));
+  flash = [];
+}
+
+/* ---------- Logik ---------- */
+function tryS1(){
+  if(!S.selChip || !S.selSlot) return;
+  const chip = S.selChip, slot = S.selSlot;
+  S.selChip = S.selSlot = null;
+  if(chip===slot){
+    S.placed[chip] = true; S.fb = `Richtig: ${S.nums[slot]} ist ${byId[chip].name}.`; S.fbk='ok';
+    if(Object.keys(S.placed).length===7) S.done = true;
+  } else {
+    S.errors++; S.fb = `${byId[chip].name} gehört nicht zu Nummer ${S.nums[slot]}.`; S.fbk='bad';
+    flash = [`.chip[data-id="${chip}"]`, `.slot[data-id="${slot}"]`];
+  }
+}
+function tryS2(){
+  if(!S.selTerm || !S.selDesc) return;
+  const t = S.selTerm, d = S.selDesc;
+  S.selTerm = S.selDesc = null;
+  if(t===d){
+    S.matched[t] = true; S.fb = `Richtig: ${byId[t].name}.`; S.fbk='ok';
+    if(Object.keys(S.matched).length===7) S.done = true;
+  } else {
+    S.errors++; S.fb = `Diese Beschreibung passt nicht zu ${byId[t].name}.`; S.fbk='bad';
+    flash = [`.chip[data-id="${t}"]`, `.desc[data-id="${d}"]`];
+  }
+}
+function checkS3(){
+  S.checks++;
+  let wrong = 0;
+  P.forEach(p => {
+    if(S.res[p.id]==='ok') return;
+    const r = judge(p.id, S.vals[p.id]||'');
+    S.res[p.id] = r;
+    if(r!=='ok') wrong++;
+  });
+  S.errors += wrong;
+  if(wrong===0){ S.done = true; return; }
+  S.fb = `${7-wrong} von 7 richtig. Verbessere die markierten Felder und prüfe nochmals.`; S.fbk='bad';
+}
+function tryX(plant){
+  if(!S.sel) return;
+  const id = S.sel; S.sel = null;
+  if(byId[id].plant===plant){
+    S.placed[id] = true; S.fb = `Richtig: ${byId[id].sort}.`; S.fbk='ok';
+    if(Object.keys(S.placed).length===7) S.done = true;
+  } else {
+    S.errors++; S.fb = plant ? `${byId[id].sort} gibt es auch in der Tierzelle.` : `${byId[id].sort} hat nur die Pflanzenzelle.`; S.fbk='bad';
+    flash = [`.chip[data-id="${id}"]`];
+  }
+}
+
+function handle(el){
+  const act = el.dataset.act, id = el.dataset.id;
+  if(act==='mode'){ mode = el.dataset.mode; newRound(); render(); window.scrollTo({top:0}); return; }
+  if(act==='again'){ newRound(); render(); return; }
+  if(mode==='s1'){
+    if(act==='chip'){ S.selChip = S.selChip===id ? null : id; S.fb=''; tryS1(); }
+    if(act==='slot' && !S.placed[id]){ S.selSlot = S.selSlot===id ? null : id; S.fb=''; tryS1(); }
+  }
+  if(mode==='s2'){
+    if(act==='term'){ S.selTerm = S.selTerm===id ? null : id; S.fb=''; tryS2(); }
+    if(act==='desc' && !S.matched[id]){ S.selDesc = S.selDesc===id ? null : id; S.fb=''; tryS2(); }
+  }
+  if(mode==='s3'){
+    if(act==='check') checkS3();
+    if(act==='solve'){ S.solved = true; S.fb = 'Die grauen Felder zeigen die Lösung.'; S.fbk=''; }
+    if(act==='finish') S.done = true;
+  }
+  if(mode==='x'){
+    if(act==='xchip'){ S.sel = S.sel===id ? null : id; S.fb=''; }
+    if(act==='bin') tryX(el.dataset.plant==='true');
+  }
+  render();
+}
+
+document.addEventListener('click', e => {
+  const el = e.target.closest('[data-act]');
+  if(el && !el.disabled) handle(el);
+});
+document.addEventListener('keydown', e => {
+  const el = e.target.closest && e.target.closest('.mk.tap');
+  if(el && (e.key==='Enter' || e.key===' ')){ e.preventDefault(); handle(el); }
+  if(mode==='s3' && e.key==='Enter' && e.target.tagName==='INPUT' && !S.solved){ checkS3(); render(); }
+});
+document.addEventListener('input', e => {
+  if(mode==='s3' && e.target.dataset.id){
+    S.vals[e.target.dataset.id] = e.target.value;
+    if(S.res[e.target.dataset.id] && S.res[e.target.dataset.id]!=='ok'){
+      delete S.res[e.target.dataset.id];
+      const row = e.target.closest('.inrow'); row.className = 'inrow';
+      const h = row.parentElement.querySelector('.hint'); if(h) h.remove();
+    }
+  }
+});
+
+newRound(); render();
+</script>
+</body>
+</html>
