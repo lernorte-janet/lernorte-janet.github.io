@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="de-CH">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Variablen üben</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400;1,700&family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#F6F8FB; --grid:#E1E8F2; --ink:#1E2A44; --muted:#5B6782;
+  --card:#FFFFFF; --line:#C9D3E3;
+  --kraft:#D9B07A; --kraft-dark:#A87B45; --sticker:#FFFDF7;
+  --blue:#2F6FDB; --blue-soft:#E4EDFC;
+  --ok:#1F8A4C; --ok-soft:#E3F4EA; --bad:#C2412D; --bad-soft:#FBE7E3;
+  --tip:#FFF4D6; --tip-line:#E9C766;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --paper:#141A26; --grid:#1F2738; --ink:#E8ECF4; --muted:#9AA6BF;
+    --card:#1B2332; --line:#2E3A50;
+    --kraft:#8C6A3E; --kraft-dark:#5E4526; --sticker:#262F42;
+    --blue:#7AA5F2; --blue-soft:#22314F;
+    --ok:#56C98A; --ok-soft:#1B3A2A; --bad:#F07C68; --bad-soft:#40231F;
+    --tip:#3A3220; --tip-line:#8A7230;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#141A26; --grid:#1F2738; --ink:#E8ECF4; --muted:#9AA6BF;
+  --card:#1B2332; --line:#2E3A50;
+  --kraft:#8C6A3E; --kraft-dark:#5E4526; --sticker:#262F42;
+  --blue:#7AA5F2; --blue-soft:#22314F;
+  --ok:#56C98A; --ok-soft:#1B3A2A; --bad:#F07C68; --bad-soft:#40231F;
+  --tip:#3A3220; --tip-line:#8A7230;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{
+  margin:0; color:var(--ink); background-color:var(--paper);
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:24px 24px;
+  font-family:"Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",sans-serif;
+  font-size:18px; line-height:1.5; min-height:100%;
+}
+.wrap{max-width:720px; margin:0 auto; padding:20px 16px 48px}
+header{display:flex; flex-wrap:wrap; align-items:flex-end; justify-content:space-between; gap:12px; margin-bottom:16px}
+h1{font-family:"Bricolage Grotesque","Atkinson Hyperlegible",system-ui,sans-serif; font-weight:800; font-size:clamp(1.9rem,6vw,2.6rem); line-height:1; margin:0; letter-spacing:-.02em}
+h1 i{font-family:Georgia,"Times New Roman",serif; font-weight:700; color:var(--blue)}
+.sub{margin:6px 0 0; color:var(--muted); font-size:.95rem}
+.stats{display:flex; gap:8px}
+.stat{background:var(--card); border:1.5px solid var(--line); border-radius:12px; padding:6px 12px; text-align:center; min-width:76px}
+.stat b{display:block; font-size:1.25rem; line-height:1.2}
+.stat span{font-size:.75rem; color:var(--muted)}
+
+.topics{display:flex; gap:8px; overflow-x:auto; padding:2px 2px 10px; margin:0 -2px 6px; scrollbar-width:none}
+.topics::-webkit-scrollbar{display:none}
+.chip{flex:none; font:inherit; font-size:.92rem; border:1.5px solid var(--line); background:var(--card); color:var(--ink); padding:8px 14px; border-radius:999px; cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--ink); color:var(--paper); border-color:var(--ink)}
+
+.sheet{background:var(--card); border:1.5px solid var(--line); border-radius:6px 6px 18px 6px; padding:20px 20px 18px; position:relative}
+.kind{font-size:.85rem; color:var(--muted); margin:0 0 10px; font-weight:700}
+.sheet p{margin:0 0 12px}
+
+.boxes{display:flex; gap:14px; justify-content:center; flex-wrap:wrap; margin:6px 0 18px}
+.box{margin:0; display:flex; flex-direction:column; align-items:center; gap:4px}
+.box figcaption{font-weight:700; font-size:1rem}
+.crate{width:106px; height:92px; margin-top:14px; background:var(--kraft); border:2px solid var(--kraft-dark); border-radius:38% 38% 46% 46% / 24% 24% 76% 76%; position:relative; display:flex; align-items:center; justify-content:center}
+.crate::before{content:""; position:absolute; top:-15px; left:50%; transform:translateX(-50%); width:34px; height:16px; background:var(--kraft); border:2px solid var(--kraft-dark); border-bottom:none; border-radius:45% 45% 0 0}
+.crate::after{content:""; position:absolute; top:-3px; left:50%; transform:translateX(-50%); width:44px; height:6px; background:var(--kraft-dark); border-radius:3px}
+.sticker{background:var(--sticker); color:var(--ink); padding:3px 8px; border-radius:3px; transform:rotate(-2deg); font-size:1.05rem; box-shadow:0 1px 0 var(--kraft-dark); white-space:nowrap}
+.count{font-size:.85rem; color:var(--muted)}
+.count b{color:var(--ink)}
+
+.term{white-space:nowrap}
+.term i{font-family:Georgia,"Times New Roman",serif; font-style:italic; font-weight:700; color:var(--blue)}
+.big{font-size:1.6rem; text-align:center; margin:8px 0 16px; display:flex; align-items:center; justify-content:center; flex-wrap:wrap; gap:8px}
+
+.fields{display:flex; flex-wrap:wrap; gap:10px 18px; margin:6px 0 4px}
+.fields label{display:flex; align-items:center; gap:8px; font-weight:700}
+input.ans{font:inherit; font-size:1.3rem; font-weight:700; width:4.2em; text-align:center; padding:6px 4px; border:2px solid var(--line); border-radius:10px; background:var(--paper); color:var(--ink)}
+input.ans:focus{outline:none; border-color:var(--blue); box-shadow:0 0 0 3px var(--blue-soft)}
+input.ans.ok{border-color:var(--ok); background:var(--ok-soft)}
+input.ans.bad{border-color:var(--bad); background:var(--bad-soft)}
+input.ans:disabled{opacity:1; -webkit-text-fill-color:var(--ink)}
+
+.options{display:grid; gap:10px; margin:8px 0 4px}
+@media (min-width:560px){.options.terms{grid-template-columns:1fr 1fr}}
+.opt{font:inherit; text-align:left; padding:12px 14px; border:2px solid var(--line); border-radius:12px; background:var(--paper); color:var(--ink); cursor:pointer; font-size:1.05rem}
+.options.terms .opt{text-align:center; font-size:1.3rem}
+.opt:hover:not(:disabled){border-color:var(--blue)}
+.opt.ok{border-color:var(--ok); background:var(--ok-soft)}
+.opt.bad{border-color:var(--bad); background:var(--bad-soft); text-decoration:line-through}
+.opt:disabled{cursor:default}
+
+.actions{display:flex; justify-content:space-between; align-items:center; gap:10px; margin-top:18px}
+.btn{font:inherit; font-weight:700; border-radius:12px; padding:12px 20px; cursor:pointer; border:2px solid transparent}
+.btn-main{background:var(--blue); color:#fff; min-width:9em}
+:root[data-theme="dark"] .btn-main{color:#0F1625}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .btn-main{color:#0F1625}}
+.btn-ghost{background:transparent; color:var(--ink); border-color:var(--line)}
+.btn:disabled{opacity:.45; cursor:default}
+button:focus-visible,.chip:focus-visible{outline:3px solid var(--blue); outline-offset:2px}
+
+.tip{background:var(--tip); border-left:4px solid var(--tip-line); border-radius:4px 10px 10px 4px; padding:10px 14px; margin-top:14px}
+.feedback{margin-top:14px; border-radius:10px; padding:12px 14px; display:none}
+.feedback.show{display:block}
+.feedback.ok{background:var(--ok-soft); border:1.5px solid var(--ok)}
+.feedback.bad{background:var(--bad-soft); border:1.5px solid var(--bad)}
+.feedback.info{background:var(--blue-soft); border:1.5px solid var(--blue)}
+.feedback strong{display:block; margin-bottom:4px}
+.solution{margin-top:6px; line-height:1.7}
+
+footer{margin-top:18px; display:flex; justify-content:flex-end}
+.link{font:inherit; font-size:.85rem; color:var(--muted); background:none; border:none; text-decoration:underline; cursor:pointer; padding:4px}
+
+@media (prefers-reduced-motion:no-preference){
+  .sheet.enter{animation:slide .28s ease-out}
+  @keyframes slide{from{opacity:0; transform:translateY(8px)}to{opacity:1; transform:none}}
+}
+@media (max-width:420px){
+  .crate{width:98px}
+  .sheet{padding:16px 14px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>Variablen üben mit <i>n</i></h1>
+      <p class="sub">Jede Aufgabe ist neu. Rechne im Kopf oder auf einem Blatt.</p>
+    </div>
+    <div class="stats" aria-live="polite">
+      <div class="stat"><b id="sCorrect">0 / 0</b><span>richtig</span></div>
+      <div class="stat"><b id="sStreak">0</b><span>in Folge</span></div>
+    </div>
+  </header>
+
+  <nav class="topics" aria-label="Thema wählen">
+    <button class="chip" data-topic="alle" aria-pressed="true">Alles gemischt</button>
+    <button class="chip" data-topic="einsetzen" aria-pressed="false">Einsetzen</button>
+    <button class="chip" data-topic="rueckwaerts" aria-pressed="false">Rückwärts rechnen</button>
+    <button class="chip" data-topic="terme" aria-pressed="false">Terme aufstellen</button>
+    <button class="chip" data-topic="vereinfachen" aria-pressed="false">Vereinfachen</button>
+    <button class="chip" data-topic="knobeln" aria-pressed="false">Knobeln (schwieriger)</button>
+  </nav>
+
+  <main class="sheet" id="sheet">
+    <p class="kind" id="kind"></p>
+    <div id="visual"></div>
+    <div id="body"></div>
+    <div id="tipBox"></div>
+    <div class="feedback" id="feedback" aria-live="polite"></div>
+    <div class="actions">
+      <button class="btn btn-ghost" id="tipBtn">Tipp anzeigen</button>
+      <button class="btn btn-main" id="mainBtn">Prüfen</button>
+    </div>
+  </main>
+
+  <footer><button class="link" id="reset">Zähler zurücksetzen</button></footer>
+</div>
+
+<script>
+(function(){
+const R=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;};
+const VARS=['n','x','k','u','y','m','z'];
+const T=s=>'<span class="term">'+String(s).replace(/([a-z])/g,'<i>$1</i>')+'</span>';
+const subst=(s,v,n)=>s.split(v).join(String(n));
+const inp=i=>`<input class="ans" data-i="${i}" type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="off" aria-label="Antwort ${i+1}">`;
+const FACH={2:'doppelt so viele',3:'dreimal so viele',4:'viermal so viele'};
+const FACHE={2:'Doppelte',3:'Dreifache',4:'Vierfache'};
+
+function boxes(list){
+  return '<div class="boxes">'+list.map(([name,term,count])=>
+    `<figure class="box"><figcaption>Sack ${name}</figcaption><div class="crate"><span class="sticker">${T(term)}</span></div>${count!=null?`<span class="count"><b>${count}</b> Kugeln</span>`:''}</figure>`
+  ).join('')+'</div>';
+}
+
+function makeTerm(v,kind){
+  if(kind==='plus'){const a=R(2,9);return{kind,s:`${v} + ${a}`,f:n=>n+a,coef:1,c:a,a,min:1,words:`${a} Kugeln mehr als in A`};}
+  if(kind==='minus'){const c=R(2,6);return{kind,s:`${v} − ${c}`,f:n=>n-c,coef:1,c:-c,cc:c,min:c+1,words:`${c} Kugeln weniger als in A`};}
+  if(kind==='times'){const b=R(2,4);return{kind,s:`${b}·${v}`,f:n=>b*n,coef:b,c:0,b,min:1,words:`${FACH[b]} Kugeln wie in A`};}
+  const b=R(2,3);let a;do{a=R(1,6);}while(a===b);
+  return{kind:'timesplus',s:`${b}·${v} + ${a}`,f:n=>b*n+a,coef:b,c:a,a,b,min:1,words:`${a} Kugeln mehr als das ${FACHE[b]} von A`};
+}
+
+/* ---------- Aufgaben-Generatoren ---------- */
+function genBoxenFuellen(){
+  const v=pick(VARS),k=shuffle(['plus','minus','times','timesplus']);
+  const B=makeTerm(v,k[0]),C=makeTerm(v,k[1]),n=R(Math.max(7,B.min,C.min),15);
+  const b=B.f(n),c=C.f(n),tot=n+b+c;
+  return{kind:'Einsetzen: Säcke füllen',
+    visual:boxes([['A',v],['B',B.s],['C',C.s]]),
+    body:`<p>Auf jedem Sack steht, wie viele Kugeln drin sind. Jetzt weisst du: ${T(v+' = '+n)}.</p><p>Wie viele Kugeln sind in B und in C? Wie viele sind es in allen drei Säcken zusammen?</p>
+      <div class="fields"><label>B: ${inp(0)}</label><label>C: ${inp(1)}</label><label>Total: ${inp(2)}</label></div>`,
+    answers:[b,c,tot],
+    tip:`Ersetze ${T(v)} überall durch ${n}. Bei Sack B rechnest du also ${T(subst(B.s,v,n))}. Für das Total zählst du A, B und C zusammen.`,
+    solution:`B: ${T(subst(B.s,v,n))} = ${b}<br>C: ${T(subst(C.s,v,n))} = ${c}<br>Total: ${n} + ${b} + ${c} = ${tot}`};
+}
+
+function genEinsetzen(){
+  const v=pick(VARS),x=R(2,10),b=R(2,6),a=R(1,9);
+  const a2=R(1,Math.min(9,b*x-1));
+  const forms=[
+    [`${b}·${v} + ${a}`,b*x+a],
+    [`${b}·${v} − ${a2}`,b*x-a2],
+    [`${v}·${v}`,x*x],
+    [`${v} + ${v} + ${a}`,2*x+a],
+    [`${a} + ${b}·${v}`,a+b*x],
+    [`${v}·${v} + ${v}`,x*x+x]
+  ];
+  const [s,ans]=pick(forms);
+  const sq=s.includes(v+'·'+v);
+  return{kind:'Einsetzen: Wert eines Terms',visual:'',
+    body:`<p>Berechne den Wert des Terms für ${T(v+' = '+x)}.</p><div class="big">${T(s)} = ${inp(0)}</div>`,
+    answers:[ans],
+    tip:`Setze für jedes ${T(v)} die Zahl ${x} ein: ${T(subst(s,v,x))}.`+(sq?` Achtung: ${T(v+'·'+v)} heisst ${x}·${x}, nicht ${x} + ${x}.`:` Punkt vor Strich: Zuerst mal, dann plus oder minus.`),
+    solution:`${T(subst(s,v,x))} = ${ans}`};
+}
+
+function backSteps(t,val,n){
+  if(t.kind==='plus')return `${val} − ${t.a} = ${n}`;
+  if(t.kind==='minus')return `${val} + ${t.cc} = ${n}`;
+  if(t.kind==='times')return `${val} : ${t.b} = ${n}`;
+  return `${val} − ${t.a} = ${val-t.a}, dann ${val-t.a} : ${t.b} = ${n}`;
+}
+function genRueckwaerts(){
+  const v=pick(VARS),t=makeTerm(v,pick(['plus','minus','times','times','timesplus'])),n=R(Math.max(3,t.min),14),val=t.f(n);
+  const steps=backSteps(t,val,n);let tip;
+  if(t.kind==='plus')tip=`In B sind ${t.a} Kugeln mehr als ${T(v)}. Was musst du von ${val} wegnehmen?`;
+  else if(t.kind==='minus')tip=`In B sind ${t.cc} Kugeln weniger als ${T(v)}. ${T(v)} ist also grösser als ${val}.`;
+  else if(t.kind==='times')tip=`${val} ist das ${FACHE[t.b]} von ${T(v)}. Teile ${val} durch ${t.b}.`;
+  else tip=`Nimm zuerst die ${t.a} einzelnen Kugeln weg. Den Rest teilst du durch ${t.b}.`;
+  return{kind:'Rückwärts rechnen',
+    visual:boxes([['A',v],['B',t.s,val]]),
+    body:`<p>Auf Sack B steht ${T(t.s)}. Du zählst nach: Es sind <b>${val}</b> Kugeln drin.</p><p>Wie viele Kugeln sind in Sack A?</p>
+      <div class="fields"><label>${T(v)} = ${inp(0)}</label></div>`,
+    answers:[n],tip,
+    solution:`Rückwärts rechnen: ${steps}<br>Probe: ${T(subst(t.s,v,n))} = ${val} ✓`};
+}
+
+function genSatzZuTerm(){
+  const v=pick(VARS),t=makeTerm(v,pick(['plus','minus','times','timesplus']));
+  let wrong,why;
+  if(t.kind==='plus'){wrong=[`${t.a}·${v}`,`${v} − ${t.a}`,`${t.a}`];why=`«mehr» heisst plus.`;}
+  else if(t.kind==='minus'){wrong=[`${t.cc} − ${v}`,`${v} + ${t.cc}`,`${t.cc}·${v}`];why=`«weniger» heisst minus. Von ${T(v)} werden ${t.cc} weggenommen.`;}
+  else if(t.kind==='times'){wrong=[`${v} + ${t.b}`,`${v}·${v}`,`${t.b}`];why=`«${FACH[t.b]}» heisst mal ${t.b}.`;}
+  else{wrong=[`${t.a}·${v} + ${t.b}`,`${t.b}·${v} − ${t.a}`,`${t.b} + ${v} + ${t.a}`];why=`Zuerst das ${FACHE[t.b]} von ${T(v)} (${T(t.b+'·'+v)}), dann ${t.a} mehr (+ ${t.a}).`;}
+  return{kind:'Terme aufstellen: Satz → Term',
+    visual:boxes([['A',v],['B','?']]),
+    body:`<p>In Sack A sind ${T(v)} Kugeln. In Sack B sind ${t.words}.</p><p>Welcher Term passt zu Sack B?</p>`,
+    mc:{options:shuffle([t.s,...wrong]),correct:t.s,terms:true},
+    tip:`Lies den Satz langsam: Heisst es «mehr», «weniger» oder «so viele wie»?`,
+    solution:`${why} Richtig ist ${T(t.s)}.`};
+}
+
+function genTermZuSatz(){
+  const v=pick(VARS),m=R(2,6),kind=pick(['plus','minus','times']);
+  const terms={plus:`${v} + ${m}`,minus:`${v} − ${m}`,times:`${m}·${v}`};
+  const sent={plus:`In B sind ${m} Kugeln mehr als in A.`,minus:`In B sind ${m} Kugeln weniger als in A.`,times:`In B sind ${m}-mal so viele Kugeln wie in A.`,konst:`In B sind immer genau ${m} Kugeln.`};
+  const why={plus:`Das Plus bedeutet: zu ${T(v)} kommen ${m} dazu.`,minus:`Das Minus bedeutet: von ${T(v)} werden ${m} weggenommen.`,times:`${T(m+'·'+v)} bedeutet ${m}-mal ${T(v)}.`};
+  return{kind:'Terme lesen: Term → Satz',
+    visual:boxes([['A',v],['B',terms[kind]]]),
+    body:`<p>In Sack A sind ${T(v)} Kugeln. Auf Sack B steht ${T(terms[kind])}.</p><p>Was bedeutet das?</p>`,
+    mc:{options:shuffle(Object.values(sent)),correct:sent[kind],terms:false},
+    tip:`Schau auf das Rechenzeichen zwischen ${T(v)} und ${m}.`,
+    solution:`${why[kind]} ${sent[kind]}`};
+}
+
+function genTotal(){
+  const v=pick(VARS);let B,C,coef,cst;
+  do{const k=shuffle(['plus','minus','times','timesplus']);B=makeTerm(v,k[0]);C=makeTerm(v,k[1]);coef=1+B.coef+C.coef;cst=B.c+C.c;}while(cst<=0);
+  return{kind:'Terme aufstellen: Total',
+    visual:boxes([['A',v],['B',B.s],['C',C.s]]),
+    body:`<p>Stelle einen möglichst kurzen Term für alle Kugeln in A, B und C zusammen auf.</p>
+      <div class="big">Total = ${inp(0)}<span class="term">·<i>${v}</i> +</span>${inp(1)}</div>`,
+    answers:[coef,cst],
+    tip:`Zähle zuerst alle ${T(v)} zusammen. Sack A hat ${T('1·'+v)}. Danach zählst du die einzelnen Kugeln (Zahlen ohne ${T(v)}).`,
+    solution:`${T(v)} + ${T(B.s)} + ${T(C.s)}<br>${T(v)}-Anteile: 1 + ${B.coef} + ${C.coef} = ${coef}<br>Einzelne Kugeln: ${[B.c,C.c].filter(c=>c!==0).join(' + ').replace('+ -','− ').replace(/^-/,'−')} = ${cst}<br>Total = ${T(coef+'·'+v+' + '+cst)}`};
+}
+
+function genVereinfachen(){
+  const v=pick(VARS),p=R(2,7),q=R(2,6),a=R(1,9),c=R(1,9);
+  const variants=[
+    ()=>({lhs:`${p}·${v} + ${q}·${v}`,ans:[p+q],two:false,sol:`${p} + ${q} = ${p+q}, also ${T((p+q)+'·'+v)}`}),
+    ()=>({lhs:`${p}·${v} + ${v} + ${q}·${v}`,ans:[p+q+1],two:false,sol:`Ein einzelnes ${T(v)} ist ${T('1·'+v)}. ${p} + 1 + ${q} = ${p+q+1}, also ${T((p+q+1)+'·'+v)}`}),
+    ()=>{const m=R(3,6);return{lhs:Array(m).fill(v).join(' + '),ans:[m],two:false,sol:`Das sind ${m} Mal ${T(v)}, also ${T(m+'·'+v)}`};},
+    ()=>{const P=Math.max(p,q)+R(1,3),Q=Math.min(p,q);return{lhs:`${P}·${v} − ${Q}·${v}`,ans:[P-Q],two:false,sol:`${P} − ${Q} = ${P-Q}, also ${T((P-Q)+'·'+v)}`};},
+    ()=>({lhs:`${p}·${v} + ${a} + ${q}·${v}`,ans:[p+q,a],two:true,sol:`${T(v)}-Anteile: ${p} + ${q} = ${p+q}. Einzelne Kugeln: ${a}. Also ${T((p+q)+'·'+v+' + '+a)}`}),
+    ()=>({lhs:`${p}·${v} + ${a} + ${q}·${v} + ${c}`,ans:[p+q,a+c],two:true,sol:`${T(v)}-Anteile: ${p} + ${q} = ${p+q}. Einzelne Kugeln: ${a} + ${c} = ${a+c}. Also ${T((p+q)+'·'+v+' + '+(a+c))}`})
+  ];
+  const r=pick(variants)();
+  return{kind:'Vereinfachen',visual:'',
+    body:`<p>Schreibe den Term kürzer.</p><div class="big">${T(r.lhs)} = ${inp(0)}<span class="term">·<i>${v}</i></span>${r.two?`<span class="term">+</span>${inp(1)}`:''}</div>`,
+    answers:r.ans,
+    tip:r.two?`Zähle Säcke und einzelne Kugeln getrennt: Wie viele ${T(v)} sind es? Wie viele Kugeln liegen einzeln daneben?`
+      :`Stell dir vor: ${T('3·'+v)} sind 3 Säcke mit je ${T(v)} Kugeln. Wie viele Säcke sind es zusammen?`,
+    solution:r.sol};
+}
+
+function genGleichwertig(){
+  const v=pick(VARS);
+  const variants=[
+    ()=>{const m=R(3,5);return{lhs:Array(m).fill(v).join(' + '),correct:`${m}·${v}`,wrong:[Array(m).fill(v).join('·'),`${v} + ${m}`,`${m}`],sol:`${m} Mal ${T(v)} zusammengezählt ist ${T(m+'·'+v)}. Achtung: ${T(Array(m).fill(v).join('·'))} heisst ${T(v)} mal ${T(v)} mal …, das ist etwas anderes.`};},
+    ()=>{const p=R(2,6);let q;do{q=R(2,6);}while(p*q===p+q);return{lhs:`${p}·${v} + ${q}·${v}`,correct:`${p+q}·${v}`,wrong:[`${p*q}·${v}`,`${p+q} + ${v}`,`${p+q}·${v}·${v}`],sol:`${p} Säcke + ${q} Säcke = ${p+q} Säcke, also ${T((p+q)+'·'+v)}.`};},
+    ()=>{const a=R(3,9);return{lhs:`${v} + ${a} + ${v}`,correct:`2·${v} + ${a}`,wrong:[`${a+2}·${v}`,`${v}·${v} + ${a}`,`${2*a}·${v}`],sol:`Zweimal ${T(v)} gibt ${T('2·'+v)}, dazu kommen ${a} einzelne Kugeln: ${T('2·'+v+' + '+a)}.`};}
+  ];
+  const r=pick(variants)();
+  return{kind:'Vereinfachen: gleichwertige Terme',visual:'',
+    body:`<p>Welcher Term bedeutet dasselbe wie</p><div class="big">${T(r.lhs)}</div>`,
+    mc:{options:shuffle([r.correct,...r.wrong]),correct:r.correct,terms:true},
+    tip:`Setze zur Kontrolle eine Zahl für ${T(v)} ein, zum Beispiel 3. Welcher Term gibt dasselbe Ergebnis?`,
+    solution:r.sol};
+}
+
+function genDreiSaecke(){
+  const v=pick(VARS),k=shuffle(['plus','minus','times','timesplus']);
+  const B=makeTerm(v,k[0]),C=makeTerm(v,k[1]),n=R(Math.max(4,B.min,C.min),15);
+  const b=B.f(n),c=C.f(n),tot=n+b+c;
+  const kn=pick(['B','C']),K=kn==='B'?B:C,O=kn==='B'?C:B,kv=kn==='B'?b:c,ov=kn==='B'?c:b,on=kn==='B'?'C':'B';
+  return{kind:'Rückwärts rechnen: 3 Säcke',
+    visual:boxes([['A',v],['B',B.s,kn==='B'?b:null],['C',C.s,kn==='C'?c:null]]),
+    body:`<p>In Sack ${kn} sind <b>${kv}</b> Kugeln. Wie viele Kugeln sind in Sack A und in Sack ${on}? Wie viele sind es in allen drei Säcken zusammen?</p>
+      <div class="fields"><label>A: ${inp(0)}</label><label>${on}: ${inp(1)}</label><label>Total: ${inp(2)}</label></div>`,
+    answers:[n,ov,tot],
+    tip:`Rechne zuerst rückwärts: Aus ${T(K.s)} = ${kv} findest du ${T(v)}, also Sack A. Dann setzt du ${T(v)} bei Sack ${on} ein.`,
+    solution:`A: ${backSteps(K,kv,n)}<br>${on}: ${T(subst(O.s,v,n))} = ${ov}<br>Total: ${n} + ${b} + ${c} = ${tot}`};
+}
+
+function totalSetup(){
+  const v=pick(VARS);let B,C,coef,cst;
+  do{const k=shuffle(['plus','minus','times','timesplus']);B=makeTerm(v,k[0]);C=makeTerm(v,k[1]);coef=1+B.coef+C.coef;cst=B.c+C.c;}while(cst<=0);
+  return{v,B,C,coef,cst,minN:Math.max(2,B.min,C.min),term:`${coef}·${v} + ${cst}`};
+}
+
+function genKnobelTotal(){
+  const {v,B,C,coef,cst,minN,term}=totalSetup();
+  const n=R(Math.max(3,minN),14),tot=coef*n+cst,c=C.f(n);
+  return{kind:'Knobeln: Total ist bekannt',
+    visual:boxes([['A',v],['B',B.s],['C',C.s]]),
+    body:`<p>In allen drei Säcken zusammen sind <b>${tot}</b> Kugeln.</p><p>Wie gross ist ${T(v)}? Wie viele Kugeln sind in Sack C?</p>
+      <div class="fields"><label>${T(v)} = ${inp(0)}</label><label>C: ${inp(1)}</label></div>`,
+    answers:[n,c],
+    tip:`Stelle zuerst einen kurzen Term für das Total auf. Dann rechnest du rückwärts: zuerst die einzelnen Kugeln wegnehmen, dann teilen.`,
+    solution:`Total = ${T(v)} + ${T(B.s)} + ${T(C.s)} = ${T(term)}<br>${tot} − ${cst} = ${tot-cst}, dann ${tot-cst} : ${coef} = ${n}, also ${T(v+' = '+n)}<br>Sack C: ${T(subst(C.s,v,n))} = ${c}`};
+}
+
+function genKnobelMoeglich(){
+  const {v,B,C,coef,cst,minN,term}=totalSetup();
+  const n=R(minN+1,14),ok=coef*n+cst;
+  const cands=[];for(let d=1;d<2*coef;d++){if(d%coef!==0){cands.push(ok+d);if(ok-d>cst)cands.push(ok-d);}}
+  const wrong=shuffle(cands).slice(0,3);
+  return{kind:'Knobeln: Welches Total ist möglich?',
+    visual:boxes([['A',v],['B',B.s],['C',C.s]]),
+    body:`<p>Vier Kinder zählen die Kugeln in allen drei Säcken zusammen. Nur eine Zahl kann stimmen. Welche?</p>`,
+    mc:{options:shuffle([ok,...wrong].map(String)),correct:String(ok),terms:true},
+    tip:`Das Total ist ${T(term)}. Nimm von der Zahl ${cst} weg. Geht der Rest genau durch ${coef} auf?`,
+    solution:`Total = ${T(term)}. ${ok} − ${cst} = ${ok-cst}, und ${ok-cst} : ${coef} = ${n}. Also ist ${T(v+' = '+n)}. Bei den anderen Zahlen geht die Division nicht auf.`};
+}
+
+const TOPICS={
+  einsetzen:[genBoxenFuellen,genEinsetzen],
+  rueckwaerts:[genRueckwaerts,genDreiSaecke],
+  terme:[genSatzZuTerm,genTermZuSatz,genTotal],
+  vereinfachen:[genVereinfachen,genGleichwertig],
+  knobeln:[genKnobelTotal,genKnobelMoeglich]
+};
+TOPICS.alle=[].concat(TOPICS.einsetzen,TOPICS.rueckwaerts,TOPICS.terme,TOPICS.vereinfachen,TOPICS.knobeln);
+
+/* ---------- Zustand ---------- */
+const KEY='variablen-ueben-v1';
+let score={done:0,correct:0,streak:0};
+try{const s=JSON.parse(localStorage.getItem(KEY)||'null');if(s&&typeof s.done==='number')score=s;}catch(e){}
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(score));}catch(e){}};
+let topic='alle',task=null,tries=0,locked=false,lastGen=null;
+
+const $=id=>document.getElementById(id);
+const sheet=$('sheet'),mainBtn=$('mainBtn'),tipBtn=$('tipBtn'),fb=$('feedback');
+
+function renderScore(){$('sCorrect').textContent=score.correct+' / '+score.done;$('sStreak').textContent=score.streak;}
+
+function newTask(){
+  const pool=TOPICS[topic];let g;
+  do{g=pick(pool);}while(pool.length>1&&g===lastGen);
+  lastGen=g;task=g();tries=0;locked=false;
+  $('kind').textContent=task.kind;
+  $('visual').innerHTML=task.visual||'';
+  let html=task.body;
+  if(task.mc){
+    html+=`<div class="options${task.mc.terms?' terms':''}">`+task.mc.options.map(o=>
+      `<button class="opt" data-ok="${o===task.mc.correct}">${task.mc.terms?T(o):o}</button>`).join('')+'</div>';
+  }
+  $('body').innerHTML=html;
+  $('tipBox').innerHTML='';
+  fb.className='feedback';fb.innerHTML='';
+  tipBtn.disabled=false;
+  mainBtn.textContent='Prüfen';
+  mainBtn.style.display=task.mc?'none':'';
+  document.querySelectorAll('.opt').forEach(b=>b.addEventListener('click',()=>choose(b)));
+  sheet.classList.remove('enter');void sheet.offsetWidth;sheet.classList.add('enter');
+  const first=document.querySelector('.ans');
+  if(first&&window.matchMedia('(pointer:fine)').matches)first.focus({preventScroll:true});
+}
+
+function showFeedback(type,title,extra){
+  fb.className='feedback show '+type;
+  fb.innerHTML=`<strong>${title}</strong>`+(extra?`<div class="solution">${extra}</div>`:'');
+}
+
+function finish(ok){
+  locked=true;score.done++;
+  if(ok){score.correct++;score.streak++;}else score.streak=0;
+  save();renderScore();
+  if(ok)showFeedback('ok',pick(['Richtig!','Stimmt genau.','Super, das ist richtig.']),'So geht\'s:<br>'+task.solution);
+  else showFeedback('bad','Das stimmt leider noch nicht. So geht\'s:',task.solution);
+  document.querySelectorAll('.ans').forEach(i=>i.disabled=true);
+  document.querySelectorAll('.opt').forEach(b=>b.disabled=true);
+  tipBtn.disabled=true;
+  mainBtn.style.display='';mainBtn.textContent='Neue Aufgabe';mainBtn.focus({preventScroll:true});
+}
+
+function check(){
+  const ins=[...document.querySelectorAll('.ans')];
+  if(ins.some(i=>i.value.trim()==='')){showFeedback('info','Fülle zuerst alle Felder aus.');return;}
+  let all=true;
+  ins.forEach(i=>{const ok=parseInt(i.value.replace(/\s/g,''),10)===task.answers[+i.dataset.i];i.classList.toggle('ok',ok);i.classList.toggle('bad',!ok);if(!ok)all=false;});
+  tries++;
+  if(all)finish(true);
+  else if(tries<2)showFeedback('bad','Noch nicht ganz.','Die rot markierten Felder stimmen nicht. Versuch es nochmals oder hol dir einen Tipp.');
+  else finish(false);
+}
+
+function choose(b){
+  if(locked||b.disabled)return;
+  if(b.dataset.ok==='true'){b.classList.add('ok');finish(true);return;}
+  b.classList.add('bad');b.disabled=true;tries++;
+  if(tries<2)showFeedback('bad','Noch nicht ganz.','Versuch es nochmals oder hol dir einen Tipp.');
+  else{document.querySelector('.opt[data-ok="true"]').classList.add('ok');finish(false);}
+}
+
+mainBtn.addEventListener('click',()=>{locked?newTask():check();});
+tipBtn.addEventListener('click',()=>{$('tipBox').innerHTML=`<div class="tip"><b>Tipp:</b> ${task.tip}</div>`;tipBtn.disabled=true;});
+document.addEventListener('keydown',e=>{
+  if(e.key!=='Enter')return;
+  if(e.target.classList&&e.target.classList.contains('opt'))return;
+  if(e.target.classList&&e.target.classList.contains('chip'))return;
+  e.preventDefault();
+  if(locked)newTask();else if(!task.mc)check();
+});
+document.querySelectorAll('.chip').forEach(c=>c.addEventListener('click',()=>{
+  document.querySelectorAll('.chip').forEach(x=>x.setAttribute('aria-pressed','false'));
+  c.setAttribute('aria-pressed','true');topic=c.dataset.topic;lastGen=null;newTask();
+}));
+$('reset').addEventListener('click',()=>{score={done:0,correct:0,streak:0};save();renderScore();});
+
+renderScore();newTask();
+})();
+</script>
+</body>
+</html>
