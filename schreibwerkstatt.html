@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Schreibwerkstatt</title>
-<meta name="description" content="Erzählung, Zusammenfassung, Stellungnahme, Erörterung überarbeiten">
+<meta name="description" content="Erzählung, Zusammenfassung, Stellungnahme, Erörterung, Privatbrief überarbeiten">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Caveat:wght@500;700&display=swap" rel="stylesheet">
@@ -118,6 +118,10 @@ h3{font-size:1.05rem;margin:0 0 .6rem}
 label.field{display:block;font-weight:700;margin:1.2rem 0 .4rem}
 .field-in{width:100%;border:2px solid var(--line);border-radius:10px;padding:.6rem .8rem;background:var(--paper)}
 textarea.field-in{min-height:7rem;resize:vertical}
+.ckwork{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:1.4rem;align-items:start}
+.cktext{position:sticky;top:calc(env(safe-area-inset-top,0px) + .8rem)}
+.cktext textarea{min-height:16rem}
+@media (max-width:900px){.ckwork{grid-template-columns:1fr}.cktext{position:static}}
 
 .protocol{white-space:pre-wrap;background:var(--paper);border-radius:14px;padding:1.2rem 1.3rem;margin:1rem 0 0;font-family:inherit;font-size:1rem;line-height:1.6;overflow-x:auto}
 .status{min-height:1.5em;margin:.6rem 0 0;color:var(--ok);font-weight:700}
@@ -225,9 +229,20 @@ textarea.field-in{min-height:7rem;resize:vertical}
 
     <section id="s2" hidden>
       <h2 id="checkTitle">Checkliste</h2>
-      <p class="muted" style="margin-top:-.4rem">Hake nur ab, was du wirklich geprüft hast. Wenn etwas fehlt, geh zurück und ändere den Text.</p>
-      <p class="progress" id="progress"></p>
-      <ul class="check" id="checklist"></ul>
+      <p class="muted" style="margin-top:-.4rem">Hake nur ab, was du wirklich geprüft hast. Wenn etwas fehlt, ändere deinen Text direkt hier.</p>
+      <div class="ckwork">
+        <div>
+          <p class="progress" id="progress"></p>
+          <ul class="check" id="checklist"></ul>
+        </div>
+        <div class="cktext">
+          <label for="txt2" class="field" style="margin-top:0">Dein Text</label>
+          <div class="editor">
+            <textarea id="txt2" spellcheck="true"></textarea>
+          </div>
+          <p class="muted" style="margin:.4rem 0 0;font-size:.92rem">Änderungen hier gelten auch für die Schritte 1 bis 3. Geh nach grösseren Änderungen nochmals zurück zu den Markierungen.</p>
+        </div>
+      </div>
       <label class="field" for="changes">Das habe ich überarbeitet</label>
       <textarea id="changes" class="field-in" placeholder="Zum Beispiel: Drei Satzanfänge mit „Dann“ umgestellt, den Anfang mitten ins Geschehen gesetzt."></textarea>
       <div class="actions">
@@ -290,7 +305,14 @@ const TYPES={
     ['Jedes Argument hat einen eigenen Absatz.',''],
     ['Überleitungen verbinden die Argumente.','Zudem, ausserdem, ein weiterer Grund ist, dagegen spricht …'],
     ['Im Schluss beziehe ich begründet Stellung.',''],
-    ['Ich schreibe im Präsens.','']]}
+    ['Ich schreibe im Präsens.','']]},
+  privatbrief:{name:'Privatbrief',check:[
+    ['Ort und Datum stehen ganz oben rechts.','Zum Beispiel: Zürich, 16. Oktober 2026'],
+    ['Der Brief beginnt mit einer Begrüssung.','Liebe Lea, / Lieber Tim, / Hallo Oma, Nach der Begrüssung steht ein Komma, und der Text beginnt in der nächsten Zeile klein (ausser bei Nomen).'],
+    ['Der Text ist in Abschnitte gegliedert.','Ein neuer Gedanke oder ein neues Thema bedeutet einen neuen Abschnitt.'],
+    ['Am Schluss steht eine Grussformel.','Liebe Grüsse / Herzliche Grüsse / Bis bald'],
+    ['Unter der Grussformel steht mein Name.',''],
+    ['Alle Teile stehen untereinander.','Ort und Datum, Begrüssung, Text, Grussformel und Name bekommen je eine eigene Zeile.']]}
 };
 const COMMON=[
   ['Ich habe alle Markierungen angeschaut.','Nicht jede Markierung ist ein Fehler, aber jede ist eine Frage wert.'],
@@ -340,15 +362,16 @@ const isLow=w=>w[0]!==w[0].toUpperCase();
 
 function analyzeCase(text){
   const findings=[], wordMarks=[], sents=[];
-  const lineRe=/[^\n]+/g; let lm;
+  const lineRe=/[^\n]+/g; let lm, prevLine='';
   while((lm=lineRe.exec(text))){
     const line=lm[0]; if(!line.trim()) continue;
+    const afterGreet=/,\s*$/.test(prevLine); prevLine=line;
     const sRe=/[^.!?…]+(?:[.!?…]+["»«“”'’)]*|$)/g; let sm;
     while((sm=sRe.exec(line))){
       const raw=sm[0]; if(!raw.trim()) continue;
       const base=lm.index+sm.index, words=[]; const wRe=new RegExp(WRE.source,'g'); let wm;
       while((wm=wRe.exec(raw))) words.push({w:wm[0],s:base+wm.index,e:base+wm.index+wm[0].length});
-      sents.push({raw:raw.replace(/\s+$/,''),line:lm.index,words});
+      sents.push({raw:raw.replace(/\s+$/,''),line:lm.index,words,afterGreet:afterGreet&&!sents.some(x=>x.line===lm.index)});
     }
   }
   const add=(x,label,tip)=>{const i=findings.push({label,tip,alt:[],s:x.s,e:x.e})-1;wordMarks.push({s:x.s,e:x.e,i,cls:'m-case'});};
@@ -361,7 +384,7 @@ function analyzeCase(text){
       const quoteStart=/[„“"»«:]/.test(before);
       const next=st.words[wi+1], prevW=st.words[wi-1];
       if(wi===0){
-        if(isLow(w)&&!skipStart&&!/[:]/.test(before)) add(x,'Satzanfang','Am Satzanfang schreibt man gross.');
+        if(isLow(w)&&!skipStart&&!st.afterGreet&&!/[:]/.test(before)) add(x,'Satzanfang','Am Satzanfang schreibt man gross.');
         return;
       }
       if(quoteStart) return;
@@ -685,6 +708,12 @@ $('checklist').addEventListener('change',e=>{
   const i=+e.target.dataset.c, arr=state.checks[state.type]||[]; arr[i]=e.target.checked; state.checks[state.type]=arr; save(); progress();
 });
 $('changes').addEventListener('input',e=>{state.changes=e.target.value;save();});
+const txt2=$('txt2');
+function fit2(){txt2.style.height='auto';txt2.style.height=txt2.scrollHeight+'px';}
+txt2.addEventListener('input',()=>{
+  state.text=txt2.value; txt.value=state.text; save(); wc(); fit2();
+  $('newBtn').hidden=!state.text.trim();
+});
 
 /* Protokoll */
 function protocolText(){
@@ -745,7 +774,7 @@ function go(n){
     if(+b.dataset.step===n) b.setAttribute('aria-current','step'); else b.removeAttribute('aria-current');
   });
   if(n<=3){refresh();requestAnimationFrame(fit);}
-  if(n===4){renderChecklist();$('changes').value=state.changes;}
+  if(n===4){renderChecklist();$('changes').value=state.changes;txt2.value=state.text;requestAnimationFrame(fit2);}
   if(n===5){$('name').value=state.name;renderProtocol();}
   window.scrollTo(0,0);
 }
