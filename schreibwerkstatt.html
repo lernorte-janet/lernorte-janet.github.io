@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Schreibwerkstatt</title>
-<meta name="description" content="Erzählung, Zusammenfassung, Stellungnahme, Erörterung, Privatbrief überarbeiten">
+<meta name="description" content="Erzählung, Zusammenfassung, Stellungnahme, Erörterung, Privatbrief, freien Text überarbeiten">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Caveat:wght@500;700&display=swap" rel="stylesheet">
@@ -118,6 +118,7 @@ h3{font-size:1.05rem;margin:0 0 .6rem}
 label.field{display:block;font-weight:700;margin:1.2rem 0 .4rem}
 .field-in{width:100%;border:2px solid var(--line);border-radius:10px;padding:.6rem .8rem;background:var(--paper)}
 textarea.field-in{min-height:7rem;resize:vertical}
+body.nostil .stil-step{display:none!important}
 .ckwork{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:1.4rem;align-items:start}
 .cktext{position:sticky;top:calc(env(safe-area-inset-top,0px) + .8rem)}
 .cktext textarea{min-height:16rem}
@@ -150,7 +151,7 @@ textarea.field-in{min-height:7rem;resize:vertical}
 
   <nav class="steps" aria-label="Arbeitsschritte">
     <ol>
-      <li><button data-step="1"><span class="n">1</span>Wortwahl</button></li>
+      <li class="stil-step"><button data-step="1"><span class="n">1</span>Wortwahl</button></li>
       <li><button data-step="2"><span class="n">2</span>Gross/Klein</button></li>
       <li><button data-step="3"><span class="n">3</span>Kommas</button></li>
       <li><button data-step="4"><span class="n">4</span>Checkliste</button></li>
@@ -217,7 +218,7 @@ textarea.field-in{min-height:7rem;resize:vertical}
           <button class="btn" data-go="2">Weiter: Gross- und Kleinschreibung</button>
         </div>
         <div class="actions gk-only">
-          <button class="btn ghost" data-go="1">Zurück zur Wortwahl</button>
+          <button class="btn ghost stil-step" data-go="1">Zurück zur Wortwahl</button>
           <button class="btn" data-go="3">Weiter: Kommas</button>
         </div>
         <div class="actions komma-only">
@@ -312,7 +313,9 @@ const TYPES={
     ['Der Text ist in Abschnitte gegliedert.','Ein neuer Gedanke oder ein neues Thema bedeutet einen neuen Abschnitt.'],
     ['Am Schluss steht eine Grussformel.','Liebe Grüsse / Herzliche Grüsse / Bis bald'],
     ['Unter der Grussformel steht mein Name.',''],
-    ['Alle Teile stehen untereinander.','Ort und Datum, Begrüssung, Text, Grussformel und Name bekommen je eine eigene Zeile.']]}
+    ['Alle Teile stehen untereinander.','Ort und Datum, Begrüssung, Text, Grussformel und Name bekommen je eine eigene Zeile.']]},
+  frei:{name:'Freier Text',check:[
+    ['Wenn nötig, ist mein Text in Abschnitte gegliedert.','Ein neuer Gedanke oder ein neues Thema bedeutet einen neuen Abschnitt. Ein kurzer Text darf auch nur einen Abschnitt haben.']]}
 };
 const COMMON=[
   ['Ich habe alle Markierungen angeschaut.','Nicht jede Markierung ist ein Fehler, aber jede ist eine Frage wert.'],
@@ -677,7 +680,8 @@ Object.entries(TYPES).forEach(([k,t])=>{
   l.innerHTML='<input type="radio" name="type" value="'+k+'"><span>'+t.name+'</span>';
   typesEl.appendChild(l);
 });
-typesEl.addEventListener('change',e=>{state.type=e.target.value;save();sel=-1;refresh();});
+function setNostil(){document.body.classList.toggle('nostil',!!TYPES[state.type].nostil);}
+typesEl.addEventListener('change',e=>{state.type=e.target.value;save();sel=-1;setNostil();if(state.step===1&&state.checked&&TYPES[state.type].nostil)go(2);else refresh();});
 
 function showChecked(){
   const on=state.checked;
@@ -692,6 +696,7 @@ $('checkBtn').addEventListener('click',()=>{
   err.hidden=true; state.checked=true;
   state.first=analyze(state.text,state.type).counts; save();
   showChecked(); sel=-1; refresh();
+  if(TYPES[state.type].nostil) go(2);
   requestAnimationFrame(fit);
 });
 
@@ -727,9 +732,10 @@ function protocolText(){
     'Umfang: '+s.words+' Wörter, '+s.sents+' Sätze, '+s.paras+' '+(s.paras===1?'Absatz':'Absätze'),
     '',
     'Markierungen (erste Prüfung → jetzt)',
+    ...(TYPES[state.type].nostil?[]:[
     '  Gleiche Satzanfänge: '+f.start+' → '+l.start,
     '  Wortwahl: '+f.word+' → '+l.word,
-    '  Sehr lange Sätze: '+f.long+' → '+l.long,
+    '  Sehr lange Sätze: '+f.long+' → '+l.long]),
     '  Gross-/Kleinschreibung: '+(state.firstCase==null?'nicht geprüft':state.firstCase+' → '+analyzeCase(state.text).counts.kase),
     '  Sätze mit fehlendem Komma: '+(state.firstComma==null?'nicht geprüft':state.firstComma+' → '+analyzeComma(state.text).counts.komma),
     '',
@@ -761,6 +767,8 @@ $('newBtn').addEventListener('click',newText);
 /* Navigation */
 function go(n){
   if(n>1&&!state.checked) n=1;
+  if(n===1&&state.checked&&TYPES[state.type].nostil) n=2;
+  setNostil();
   state.step=n;
   const sec=n<=3?1:n-2;
   [1,2,3].forEach(i=>{$('s'+i).hidden=i!==sec;});
