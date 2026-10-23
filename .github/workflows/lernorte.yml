@@ -53,11 +53,18 @@ jobs:
           KUERZEL = {"mathe": "mathematik", "mathematik": "mathematik",
                      "deutsch": "deutsch", "musik": "musik",
                      "nt": "nt", "natur und technik": "nt"}
+          # Klassen-Ordner: Fach_Klasse_Thema_Titel, z. B. Mathematik_1Real_Brueche_Brueche-ueben.html
+          KLASSE_RE = re.compile(r"^([1-3])\s*\.?\s*-?\s*(real|sek)$", re.I)
+          def klasse_von(s):
+              m = KLASSE_RE.match(nfc(s).strip())
+              return f"{m.group(1)}. {m.group(2).capitalize()}" if m else ""
+          # Bestehende Dateien einer Klasse zuordnen (Adresse bleibt gleich)
+          KLASSE_FEST = {"Mathematik_Variablen_Variablen-ueben.html": "1. Real"}
           gefunden = {f: {} for f in FAECHER}
-          def eintragen(fach, thema, pfad, name, titel_vorgabe=""):
+          def eintragen(fach, thema, pfad, name, titel_vorgabe="", klasse=""):
               endung = os.path.splitext(name)[1].lower()
               titel, info = (html_infos(pfad) if ARTEN[endung] == "App" else ("", ""))
-              gefunden[fach].setdefault(nfc(thema), []).append({
+              gefunden[fach].setdefault((klasse, nfc(thema)), []).append({
                   "titel": nfc(titel or titel_vorgabe or lesbar(name)), "info": nfc(info),
                   "datei": pfad.replace(os.sep, "/"), "art": ARTEN[endung]})
           # 1) Dateien auf der Hauptebene: Fach_Thema_Titel.pdf
@@ -70,10 +77,14 @@ jobs:
                   continue
               teile = os.path.splitext(d)[0].split("_")
               fach = KUERZEL.get(nfc(teile[0]).strip().lower())
+              klasse = KLASSE_FEST.get(nfc(d), "")
+              if fach and len(teile) >= 3 and klasse_von(teile[1]):
+                  klasse = klasse_von(teile[1])
+                  teile = [teile[0]] + teile[2:]
               if fach and len(teile) >= 3:
-                  eintragen(fach, teile[1].strip(), d, d, " ".join(teile[2:]).strip())
+                  eintragen(fach, teile[1].strip(), d, d, " ".join(teile[2:]).strip(), klasse)
               elif fach and len(teile) == 2:
-                  eintragen(fach, "Weitere Materialien", d, d, teile[1].strip())
+                  eintragen(fach, "Weitere Materialien", d, d, teile[1].strip(), klasse)
           # 2) Dateien in Ordnern: mathematik/Thema/datei.pdf
           for fach in FAECHER:
               if not os.path.isdir(fach):
@@ -81,13 +92,16 @@ jobs:
               for wurzel, ordner, dateien in os.walk(fach):
                   ordner[:] = [o for o in ordner if not o.startswith((".", "_"))]
                   teile = os.path.relpath(wurzel, fach).split(os.sep)
+                  klasse = klasse_von(teile[0])
+                  if klasse:
+                      teile = teile[1:] or ["."]
                   thema = " / ".join(teile) if teile != ["."] else "Weitere Materialien"
                   for d in dateien:
                       if d.startswith((".", "_")) or os.path.splitext(d)[1].lower() not in ARTEN:
                           continue
-                      eintragen(fach, thema, os.path.join(wurzel, d), d)
-          liste = {f: [{"thema": t, "eintraege": sorted(e, key=lambda x: sortkey(x["datei"]))}
-                       for t, e in sorted(th.items(), key=lambda x: sortkey(x[0]))]
+                      eintragen(fach, thema, os.path.join(wurzel, d), d, "", klasse)
+          liste = {f: [{"thema": t, "klasse": k, "eintraege": sorted(e, key=lambda x: sortkey(x["datei"]))}
+                       for (k, t), e in sorted(th.items(), key=lambda x: (sortkey(x[0][0]), sortkey(x[0][1])))]
                    for f, th in gefunden.items()}
           with open("liste.json", "w", encoding="utf-8") as f:
               json.dump(liste, f, ensure_ascii=False, indent=1)
