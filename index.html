@@ -99,6 +99,18 @@ header p { margin: 0 0 28px; color: var(--muted); }
   border: 1.5px solid var(--akzent); border-radius: 999px; padding: 2px 10px; }
 .eintrag.spaeter { opacity: 0.55; pointer-events: none; border-left-style: dashed; }
 .leer { color: var(--muted); }
+/* Klassen-Ordner */
+.ordnerliste { display: grid; grid-template-columns: repeat(2, 1fr); gap: 22px 16px; margin: 0 0 32px; padding: 0; list-style: none; }
+@media (max-width: 560px) { .ordnerliste { grid-template-columns: 1fr; } }
+.ordner { position: relative; display: flex; flex-direction: column; justify-content: flex-end; min-height: 130px;
+  margin-top: 14px; padding: 20px 22px; background: var(--paper); color: var(--ink); text-decoration: none;
+  border: 2px solid var(--akzent); border-radius: 0 8px 8px 8px; }
+.ordner::before { content: ""; position: absolute; left: -2px; top: -16px; width: 40%; height: 16px;
+  background: var(--akzent); border-radius: 8px 8px 0 0; }
+.ordner strong { font-size: 1.7rem; font-weight: 800; line-height: 1.1; color: var(--akzent); }
+.ordner small { color: var(--muted); font-size: 0.95rem; }
+.ordner:hover { box-shadow: inset 0 0 0 2px var(--akzent); }
+.ordner:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
 footer { margin-top: 40px; color: var(--muted); font-size: 0.85rem; }
 @media (prefers-reduced-motion: no-preference) { .ort { transition: border-color .15s; } }
 </style>
@@ -122,7 +134,7 @@ footer { margin-top: 40px; color: var(--muted); font-size: 0.85rem; }
     </section>
 
     <section id="fach" hidden>
-      <a class="zurueck" href="#">‹ Alle Fächer</a>
+      <a class="zurueck" id="zurueck" href="#">‹ Alle Fächer</a>
       <div class="fachkopf" id="fachkopf"><h2 id="fachtitel"></h2></div>
       <div id="themen"></div>
     </section>
@@ -137,12 +149,14 @@ footer { margin-top: 40px; color: var(--muted); font-size: 0.85rem; }
    Neue Materialien auf der Hauptebene hochladen,
    Dateiname nach dem Muster Fach_Thema_Titel
    (Fach: Mathe, Deutsch, NT oder Musik).
+   Für einen Klassen-Ordner: Fach_Klasse_Thema_Titel,
+   z. B. Mathematik_1Real_Brueche_Brueche-ueben.html
    Die Liste (liste.json) wird danach automatisch neu erstellt.
    ================================================================ */
 const NAME = "Janet";
 
 const FAECHER = {
-  mathematik: { titel: "Mathematik", stil: "mathe",   farbe: "var(--mathe)" },
+  mathematik: { titel: "Mathematik", stil: "mathe",   farbe: "var(--mathe)", klassen: ["1. Real", "2. Real"] },
   deutsch:    { titel: "Deutsch",    stil: "deutsch", farbe: "var(--deutsch)" },
   nt:         { titel: "Natur und Technik", stil: "nt", farbe: "var(--nt)" },
   musik:      { titel: "Musik",      stil: "musik",   farbe: "var(--musik)" }
@@ -164,28 +178,15 @@ async function laden() {
   } catch (e) { LISTE = {}; }
   for (const id of Object.keys(FAECHER)) {
     const n = (LISTE[id] || []).reduce((s, t) => s + t.eintraege.length, 0);
-    document.getElementById("z-" + id).textContent =
-      n === 0 ? "Noch keine Materialien" : n === 1 ? "1 Material" : n + " Materialien";
+    document.getElementById("z-" + id).textContent = anzahl(n);
   }
   zeigen();
 }
 
-function zeigen() {
-  const id = decodeURIComponent(location.hash.slice(1));
-  const f = FAECHER[id];
-  document.getElementById("start").hidden = !!f;
-  document.getElementById("fach").hidden = !f;
-  if (!f || !LISTE) return;
-  const kopf = document.getElementById("fachkopf");
-  kopf.className = "fachkopf ort " + f.stil;
-  document.getElementById("fachtitel").textContent = f.titel;
-  const themen = document.getElementById("themen");
-  themen.innerHTML = "";
-  themen.style.setProperty("--akzent", f.farbe);
-  const liste = LISTE[id] || [];
-  if (!liste.length) {
-    themen.innerHTML = '<p class="leer">Hier kommen bald Materialien.</p>';
-  }
+const slug = k => k.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+const anzahl = n => n === 0 ? "Noch keine Materialien" : n === 1 ? "1 Material" : n + " Materialien";
+
+function themenZeigen(ziel, liste) {
   for (const t of liste) {
     const sec = document.createElement("section");
     sec.className = "thema";
@@ -203,7 +204,56 @@ function zeigen() {
       a.querySelector(".art").textContent = e.art;
       li.appendChild(a); ul.appendChild(li);
     }
-    themen.appendChild(sec);
+    ziel.appendChild(sec);
+  }
+}
+
+function zeigen() {
+  const [id, ks] = decodeURIComponent(location.hash.slice(1)).split("/");
+  const f = FAECHER[id];
+  document.getElementById("start").hidden = !!f;
+  document.getElementById("fach").hidden = !f;
+  if (!f || !LISTE) return;
+  const alle = LISTE[id] || [];
+  const klassen = [...new Set([...(f.klassen || []), ...alle.map(t => t.klasse).filter(Boolean)])];
+  const klasse = ks ? klassen.find(k => slug(k) === ks) : null;
+  if (ks && !klasse) { location.hash = id; return; }
+
+  const kopf = document.getElementById("fachkopf");
+  kopf.className = "fachkopf ort " + f.stil;
+  document.getElementById("fachtitel").textContent = klasse ? f.titel + " – " + klasse : f.titel;
+  const zurueck = document.getElementById("zurueck");
+  zurueck.href = klasse ? "#" + id : "#";
+  zurueck.textContent = klasse ? "‹ " + f.titel : "‹ Alle Fächer";
+
+  const themen = document.getElementById("themen");
+  themen.innerHTML = "";
+  themen.style.setProperty("--akzent", f.farbe);
+
+  if (klasse) {
+    const liste = alle.filter(t => t.klasse === klasse);
+    if (!liste.length) themen.innerHTML = '<p class="leer">Hier kommen bald Materialien.</p>';
+    themenZeigen(themen, liste);
+  } else {
+    if (klassen.length) {
+      const ul = document.createElement("ul");
+      ul.className = "ordnerliste";
+      for (const k of klassen) {
+        const n = alle.filter(t => t.klasse === k).reduce((s, t) => s + t.eintraege.length, 0);
+        const li = document.createElement("li");
+        const a = document.createElement("a");
+        a.className = "ordner";
+        a.href = "#" + id + "/" + slug(k);
+        a.innerHTML = "<strong></strong><small></small>";
+        a.querySelector("strong").textContent = k;
+        a.querySelector("small").textContent = anzahl(n);
+        li.appendChild(a); ul.appendChild(li);
+      }
+      themen.appendChild(ul);
+    }
+    const ohne = alle.filter(t => !t.klasse);
+    if (!ohne.length && !klassen.length) themen.innerHTML = '<p class="leer">Hier kommen bald Materialien.</p>';
+    themenZeigen(themen, ohne);
   }
   window.scrollTo(0, 0);
 }
