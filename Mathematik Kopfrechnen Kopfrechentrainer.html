@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Kopfrechnen</title>
+<style>
+:root{
+  --paper:#FAFBF7; --grid:#E3E9EF; --ink:#1D2B4A; --soft:#5B6782;
+  --marker:#FFD84D; --on-marker:#1D2B4A; --ok:#2F8F5B; --bad:#C93C3C;
+  --card:#FFFFFF; --line:#C9D3DE; --key:#FFFFFF; --key-press:#EEF2F7;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --paper:#141A26; --grid:#1D2535; --ink:#E8EDF7; --soft:#9AA6BF;
+    --marker:#E8B923; --on-marker:#1D2B4A; --ok:#4CC38A; --bad:#F07878;
+    --card:#1B2333; --line:#34415B; --key:#212B3E; --key-press:#2B374F;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#141A26; --grid:#1D2535; --ink:#E8EDF7; --soft:#9AA6BF;
+  --marker:#E8B923; --on-marker:#1D2B4A; --ok:#4CC38A; --bad:#F07878;
+  --card:#1B2333; --line:#34415B; --key:#212B3E; --key-press:#2B374F;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html,body{margin:0;min-height:100%}
+body{
+  background-color:var(--paper);
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:26px 26px;
+  color:var(--ink);
+  font-family:"Avenir Next","Avenir","Segoe UI",system-ui,-apple-system,sans-serif;
+  font-size:18px; line-height:1.45;
+  -webkit-tap-highlight-color:transparent;
+}
+main{max-width:680px;margin:0 auto;padding:20px 18px 40px}
+a{color:var(--soft)}
+.home{display:inline-block;font-size:15px;margin-bottom:14px}
+h1{font-size:44px;line-height:1.05;margin:0 0 8px;font-weight:700;letter-spacing:-.01em}
+.intro{margin:0 0 26px;color:var(--soft);max-width:34em}
+h2{font-size:17px;font-weight:600;margin:24px 0 10px;color:var(--soft)}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
+
+.choices{display:grid;gap:10px}
+.ops{grid-template-columns:repeat(5,1fr)}
+.lvls{grid-template-columns:repeat(4,1fr)}
+.modes{grid-template-columns:repeat(4,1fr)}
+@media (max-width:560px){
+  .ops{grid-template-columns:repeat(3,1fr)}
+  .lvls{grid-template-columns:repeat(2,1fr)}
+  .modes{grid-template-columns:repeat(2,1fr)}
+}
+.choice{
+  background:var(--card);border:2px solid var(--line);border-radius:14px;
+  padding:12px 8px;text-align:center;min-height:64px;
+}
+.choice .sym{display:block;font-size:34px;line-height:1;font-weight:700;margin-bottom:4px}
+.choice .sub{display:block;font-size:13px;overflow-wrap:anywhere;hyphens:auto;color:var(--soft);font-variant-numeric:tabular-nums}
+.choice strong{display:block;font-size:17px}
+.choice[aria-pressed="true"]{background:var(--marker);border-color:var(--marker);color:var(--on-marker)}
+.choice[aria-pressed="true"] .sub{color:var(--on-marker)}
+
+.start{
+  margin-top:30px;width:100%;padding:18px;border:0;border-radius:16px;
+  background:var(--ink);color:var(--paper);font-size:22px;font-weight:700;
+}
+.record{margin:12px 0 0;text-align:center;color:var(--soft);font-size:15px;min-height:1.4em}
+
+/* Spiel */
+.bar{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.ghost{background:none;border:2px solid var(--line);border-radius:12px;padding:6px 14px;font-size:15px;color:var(--soft)}
+.status{font-weight:600;font-variant-numeric:tabular-nums}
+.progress{height:8px;border-radius:4px;background:var(--line);margin:12px 0 0;overflow:hidden}
+.progress span{display:block;height:100%;width:0;background:var(--ink);transition:width .25s}
+.task{
+  display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:.25em .35em;
+  margin:44px 0 10px;font-size:clamp(52px,13vw,96px);font-weight:600;line-height:1.1;
+  font-variant-numeric:tabular-nums;
+}
+.answer{
+  min-width:2.4em;padding:0 .2em;text-align:center;border-bottom:5px solid var(--ink);
+  background:linear-gradient(transparent 55%,var(--marker) 55%);
+  color:var(--ink);min-height:1.1em;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .answer{background:linear-gradient(transparent 70%,rgba(232,185,35,.35) 70%)}}
+.answer.ok{border-color:var(--ok);color:var(--ok)}
+.answer.bad{border-color:var(--bad);color:var(--bad);text-decoration:line-through;text-decoration-thickness:4px}
+.fb{text-align:center;min-height:2em;font-size:22px;font-weight:600;margin-bottom:18px}
+.fb.ok{color:var(--ok)} .fb.bad{color:var(--bad)}
+
+.pad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;max-width:420px;margin:0 auto}
+.key{
+  background:var(--key);border:2px solid var(--line);border-radius:14px;
+  font-size:30px;font-weight:600;padding:14px 0;touch-action:manipulation;
+}
+.key:active{background:var(--key-press)}
+.key.ok{grid-column:1 / -1;background:var(--ink);color:var(--paper);border-color:var(--ink);font-size:24px}
+.key[hidden]{display:block;visibility:hidden}
+
+/* Resultat */
+.score{font-size:clamp(48px,12vw,80px);font-weight:700;line-height:1;margin:30px 0 6px;font-variant-numeric:tabular-nums}
+.msg{font-size:22px;margin:0 0 6px}
+.meta{color:var(--soft);margin:0}
+.newrec{display:inline-block;background:var(--marker);color:var(--on-marker);font-weight:700;padding:2px 10px;border-radius:8px;margin-top:12px}
+.mistakes{background:var(--card);border:2px solid var(--line);border-radius:14px;padding:6px 18px;margin-top:24px}
+.mistakes ul{list-style:none;padding:0;margin:0}
+.mistakes li{display:flex;justify-content:space-between;gap:16px;padding:10px 0;border-bottom:1px solid var(--line);font-size:22px;font-variant-numeric:tabular-nums}
+.mistakes li:last-child{border-bottom:0}
+.mistakes .right{color:var(--ok);font-weight:700}
+.actions{display:grid;gap:10px;margin-top:26px}
+.actions .start{margin-top:0}
+.second{width:100%;padding:16px;border-radius:16px;border:2px solid var(--ink);background:var(--card);font-size:19px;font-weight:600}
+
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<main>
+
+<!-- Auswahl -->
+<section id="setup">
+  <a class="home" href="/">Zur Startseite</a>
+  <h1>Kopfrechnen</h1>
+  <p class="intro">Wähle eine Rechenart und eine Stufe. Rechne dann im Kopf und tippe das Ergebnis ein.</p>
+
+  <h2>Rechenart</h2>
+  <div class="choices ops" id="ops"></div>
+
+  <h2>Stufe</h2>
+  <div class="choices lvls" id="lvls"></div>
+
+  <h2>Übung</h2>
+  <div class="choices modes" id="modes"></div>
+
+  <button class="start" id="go">Starten</button>
+  <p class="record" id="record"></p>
+</section>
+
+<!-- Spiel -->
+<section id="play" hidden>
+  <div class="bar">
+    <button class="ghost" id="stop">Beenden</button>
+    <span class="status" id="status"></span>
+  </div>
+  <div class="progress"><span id="prog"></span></div>
+
+  <div class="task" aria-live="polite">
+    <span id="q"></span><span>=</span><span class="answer" id="a"></span>
+  </div>
+  <div class="fb" id="fb" aria-live="polite"></div>
+
+  <div class="pad" id="pad">
+    <button class="key" data-k="7">7</button><button class="key" data-k="8">8</button><button class="key" data-k="9">9</button>
+    <button class="key" data-k="4">4</button><button class="key" data-k="5">5</button><button class="key" data-k="6">6</button>
+    <button class="key" data-k="1">1</button><button class="key" data-k="2">2</button><button class="key" data-k="3">3</button>
+    <button class="key" data-k="," id="comma">,</button><button class="key" data-k="0">0</button><button class="key" data-k="del" aria-label="Löschen">⌫</button>
+    <button class="key ok" data-k="ok" id="okkey">Prüfen</button>
+  </div>
+</section>
+
+<!-- Resultat -->
+<section id="result" hidden>
+  <div class="score" id="score"></div>
+  <p class="msg" id="msg"></p>
+  <p class="meta" id="meta"></p>
+  <div id="rec"></div>
+  <div class="mistakes" id="mist" hidden>
+    <h2>Diese Aufgaben waren falsch</h2>
+    <ul id="mlist"></ul>
+  </div>
+  <div class="actions">
+    <button class="start" id="again">Nochmals spielen</button>
+    <button class="second" id="fix" hidden>Fehler nochmals üben</button>
+    <button class="second" id="back">Andere Übung wählen</button>
+  </div>
+</section>
+
+</main>
+<script>
+(function(){
+  const OPS = [
+    {id:'plus',    sym:'+', name:'Addition'},
+    {id:'minus',   sym:'−', name:'Subtraktion'},
+    {id:'mal',     sym:'·', name:'Multiplikation'},
+    {id:'geteilt', sym:':', name:'Division'},
+    {id:'mix',     sym:'?', name:'Gemischt'}
+  ];
+  const LVL = ['leicht','mittel','schwer','Profi'];
+  const EX = {
+    plus:   ['7 + 5','47 + 8','345 + 46','3400 + 2700'],
+    minus:  ['13 − 5','52 − 7','520 − 47','6100 − 2800'],
+    mal:    ['5 · 7','8 · 6','30 · 40','700 · 8'],
+    geteilt:['35 : 5','48 : 6','1200 : 30','5600 : 8'],
+    mix:    ['bis 20','bis 100','bis 1000','bis 10 000']
+  };
+  const MODES = [
+    {id:'ten', name:'10 Aufgaben', sub:'in Ruhe rechnen'},
+    {id:'m1',  name:'1 Minute',    sub:'so viele wie möglich', secs:60},
+    {id:'m2',  name:'2 Minuten',   sub:'so viele wie möglich', secs:120},
+    {id:'m5',  name:'5 Minuten',   sub:'so viele wie möglich', secs:300}
+  ];
+  const modeOf = id => MODES.find(m=>m.id===id);
+
+  const $ = id => document.getElementById(id);
+  const sel = {op:'plus', lvl:1, mode:'ten'};
+  let st = null, timer = null, nextT = null;
+
+  /* ---------- Aufgaben erzeugen ---------- */
+  const r = (a,b) => a + Math.floor(Math.random()*(b-a+1));
+  const r1 = n => Math.round(n*10)/10;
+  const fmt = n => String(r1(n)).replace('.', ',');
+
+  function addPair(l){
+    if(l===1) return [r(1,10), r(1,10)];
+    if(l===2) return [r(11,89), r(2,9)];
+    if(l===3) return Math.random()<.5 ? [r(101,899), r(11,99)] : [r(11,59)*10, r(11,39)*10];
+    const x = Math.random();
+    if(x<.4) return [r(1001,8999), r(11,99)];
+    if(x<.8) return [r(11,59)*100, r(11,39)*100];
+    return [r(101,599)*10, r(11,39)*100];
+  }
+  function mulPair(l){
+    if(l===1) return [[2,5,10][r(0,2)], r(1,10)];
+    if(l===2) return [r(2,10), r(2,10)];
+    const x = Math.random();
+    if(l===3){
+      if(x<.5)  return [r(2,9)*10, r(2,9)*10];
+      if(x<.75) return [r(12,25), r(3,9)];
+      return [r(11,19), r(6,9)];
+    }
+    if(x<.35) return [r(2,9)*100, r(2,9)];
+    if(x<.6)  return [r(12,25)*10, r(2,9)];
+    if(x<.85) return [r(26,99), r(2,5)];
+    return [r(11,19)*100, r(2,5)];
+  }
+  function gen(op, l){
+    if(op==='mix') op = ['plus','minus','mal','geteilt'][r(0,3)];
+    let a, b;
+    if(op==='plus'){ [a,b]=addPair(l); return {text:`${fmt(a)} + ${fmt(b)}`, ans:r1(a+b)}; }
+    if(op==='minus'){ [a,b]=addPair(l); return {text:`${fmt(a+b)} − ${fmt(b)}`, ans:r1(a)}; }
+    [a,b]=mulPair(l);
+    if(op==='mal'){
+      if(Number.isInteger(a) && Math.random()<.5) [a,b]=[b,a];
+      return {text:`${fmt(a)} · ${fmt(b)}`, ans:r1(a*b)};
+    }
+    const c = r1(a*b);
+    const d = Math.random()<.5 ? b : a;
+    return {text:`${fmt(c)} : ${fmt(d)}`, ans:r1(c/d)};
+  }
+  function makeQueue(n){
+    const q=[], seen=new Set();
+    let tries=0;
+    while(q.length<n && tries<200){
+      const t=gen(sel.op, sel.lvl); tries++;
+      if(seen.has(t.text) && tries<150) continue;
+      seen.add(t.text); q.push(t);
+    }
+    return q;
+  }
+
+  /* ---------- Rekorde ---------- */
+  const recKey = () => `kopfrechnen-${sel.op}-${sel.lvl}-${sel.mode}`;
+  function getRec(){ try{ const v=localStorage.getItem(recKey()); return v===null?null:Number(v); }catch(e){ return null; } }
+  function setRec(v){ try{ localStorage.setItem(recKey(), String(v)); }catch(e){} }
+  function timeText(sec){
+    sec=Math.round(sec);
+    return sec<60 ? `${sec} s` : `${Math.floor(sec/60)} min ${sec%60} s`;
+  }
+  function showRecord(){
+    const v=getRec();
+    if(v===null){ $('record').textContent=''; return; }
+    $('record').textContent = sel.mode!=='ten'
+      ? `Dein Rekord hier: ${v} richtig in ${modeOf(sel.mode).name}`
+      : `Dein Rekord hier: alle 10 richtig in ${timeText(v)}`;
+  }
+
+  /* ---------- Auswahl ---------- */
+  function choice(html, pressed, onClick){
+    const b=document.createElement('button');
+    b.className='choice'; b.innerHTML=html;
+    b.setAttribute('aria-pressed', pressed);
+    b.addEventListener('click', onClick);
+    return b;
+  }
+  function renderSetup(){
+    const ops=$('ops'); ops.innerHTML='';
+    OPS.forEach(o=>ops.appendChild(choice(
+      `<span class="sym">${o.sym}</span><span class="sub">${o.name}</span>`,
+      sel.op===o.id, ()=>{sel.op=o.id; renderSetup();})));
+    const lv=$('lvls'); lv.innerHTML='';
+    LVL.forEach((n,i)=>lv.appendChild(choice(
+      `<strong>Stufe ${i+1}</strong><span class="sub">${n}</span><span class="sub">${sel.op==='mix'?EX.mix[i]:'z. B. '+EX[sel.op][i]}</span>`,
+      sel.lvl===i+1, ()=>{sel.lvl=i+1; renderSetup();})));
+    const md=$('modes'); md.innerHTML='';
+    MODES.forEach(m=>md.appendChild(choice(
+      `<strong>${m.name}</strong><span class="sub">${m.sub}</span>`,
+      sel.mode===m.id, ()=>{sel.mode=m.id; renderSetup();})));
+    showRecord();
+  }
+  function show(id){
+    ['setup','play','result'].forEach(s=>$(s).hidden = s!==id);
+    window.scrollTo(0,0);
+  }
+
+  /* ---------- Spiel ---------- */
+  function start(queue){
+    clearInterval(timer); clearTimeout(nextT);
+    const fix = !!queue;
+    st = {
+      kind: fix ? 'fix' : (sel.mode==='ten' ? 'ten' : 'min'),
+      dur: modeOf(sel.mode).secs || 0,
+      queue: fix ? queue : (sel.mode==='ten' ? makeQueue(10) : null),
+      idx:0, correct:0, done:0, wrong:[], input:'', locked:false,
+      t0: Date.now()
+    };
+    $('comma').hidden = true;
+    show('play');
+    if(st.kind==='min'){
+      timer=setInterval(tick,200);
+    }
+    nextTask();
+  }
+  function tick(){
+    const left = Math.max(0, st.dur - (Date.now()-st.t0)/1000);
+    const s = Math.ceil(left);
+    const clock = s>=60 ? `${Math.floor(s/60)}:${String(s%60).padStart(2,'0')} min` : `${s} s`;
+    $('status').textContent = `Noch ${clock} · ${st.correct} richtig`;
+    $('prog').style.width = (left/st.dur*100)+'%';
+    if(left<=0) finish();
+  }
+  function nextTask(){
+    clearTimeout(nextT);
+    if(st.kind!=='min' && st.idx>=st.queue.length){ finish(); return; }
+    st.task = st.kind==='min' ? gen(sel.op, sel.lvl) : st.queue[st.idx];
+    st.input=''; st.locked=false;
+    $('q').textContent=st.task.text;
+    $('a').className='answer'; $('a').textContent='';
+    $('fb').className='fb'; $('fb').textContent='';
+    $('okkey').textContent='Prüfen';
+    if(st.kind==='min') tick();
+    else{
+      $('status').textContent = `Aufgabe ${st.idx+1} von ${st.queue.length}`;
+      $('prog').style.width = (st.idx/st.queue.length*100)+'%';
+    }
+  }
+  function press(k){
+    if(!st) return;
+    if(st.locked){ if(k==='ok' && st.canSkip) nextTask(); return; }
+    if(k==='ok'){ check(); return; }
+    if(k==='del'){ st.input=st.input.slice(0,-1); }
+    else if(k===','){ return; }
+    else if(st.input.length<7){ st.input = (st.input==='0') ? k : st.input+k; }
+    $('a').textContent=st.input;
+  }
+  function check(){
+    if(st.input==='' || st.input.endsWith(',')) return;
+    const val=parseFloat(st.input.replace(',','.'));
+    const ok=Math.abs(val-st.task.ans)<0.001;
+    st.locked=true; st.done++;
+    if(st.kind!=='min') st.idx++;
+    if(ok){
+      st.correct++;
+      $('a').className='answer ok';
+      $('fb').className='fb ok';
+      $('fb').textContent=['Richtig!','Super!','Genau!','Stimmt!'][r(0,3)];
+      st.canSkip=false;
+      nextT=setTimeout(nextTask, 550);
+    } else {
+      st.wrong.push(st.task);
+      $('a').className='answer bad';
+      $('fb').className='fb bad';
+      $('fb').textContent=`Richtig wäre: ${fmt(st.task.ans)}`;
+      $('okkey').textContent='Weiter';
+      st.canSkip=true;
+      nextT=setTimeout(nextTask, st.kind==='min' ? 1500 : 2600);
+    }
+    if(st.kind==='min') tick();
+  }
+  function finish(){
+    clearInterval(timer); clearTimeout(nextT);
+    const secs=(Date.now()-st.t0)/1000;
+    let total = st.kind==='min' ? st.done : st.queue.length;
+    let ratio = total ? st.correct/total : 0;
+
+    $('score').textContent = st.kind==='min'
+      ? `${st.correct} richtig`
+      : `${st.correct} von ${total}`;
+    $('meta').textContent = st.kind==='min'
+      ? `In ${modeOf(sel.mode).name}: ${total} Aufgaben gerechnet`
+      : `Zeit: ${timeText(secs)}`;
+    $('msg').textContent =
+      total===0 ? 'Starte nochmals und tippe deine Antworten ein.' :
+      ratio>=.9 ? 'Super gerechnet!' :
+      ratio>=.7 ? 'Gut gemacht!' :
+      ratio>=.5 ? 'Weiter so – übe noch etwas.' :
+                  'Übe die Fehler nochmals oder wähle eine leichtere Stufe.';
+
+    // Rekord
+    $('rec').innerHTML='';
+    if(st.kind!=='fix'){
+      const old=getRec(); let isNew=false;
+      if(st.kind==='min' && st.correct>0 && (old===null || st.correct>old)){ setRec(st.correct); isNew=old!==null; }
+      if(st.kind==='ten' && st.correct===10 && (old===null || secs<old)){ setRec(Math.round(secs)); isNew=old!==null; }
+      if(isNew) $('rec').innerHTML='<span class="newrec">Neuer Rekord!</span>';
+    }
+
+    // Fehlerliste
+    const ml=$('mlist'); ml.innerHTML='';
+    st.wrong.forEach(t=>{
+      const li=document.createElement('li');
+      li.innerHTML=`<span>${t.text} =</span><span class="right">${fmt(t.ans)}</span>`;
+      ml.appendChild(li);
+    });
+    $('mist').hidden = st.wrong.length===0;
+    $('fix').hidden  = st.wrong.length===0;
+    show('result');
+  }
+
+  /* ---------- Ereignisse ---------- */
+  $('go').addEventListener('click', ()=>start());
+  $('again').addEventListener('click', ()=>start());
+  $('fix').addEventListener('click', ()=>start(st.wrong.slice()));
+  $('back').addEventListener('click', ()=>{ st=null; renderSetup(); show('setup'); });
+  $('stop').addEventListener('click', ()=>{ clearInterval(timer); clearTimeout(nextT); st=null; renderSetup(); show('setup'); });
+  $('pad').addEventListener('click', e=>{
+    const k=e.target.closest('[data-k]'); if(k) press(k.dataset.k);
+  });
+  document.addEventListener('keydown', e=>{
+    if($('play').hidden) return;
+    if(/^[0-9]$/.test(e.key)) press(e.key);
+    else if(e.key===','||e.key==='.') press(',');
+    else if(e.key==='Backspace') press('del');
+    else if(e.key==='Enter'){ e.preventDefault(); press('ok'); }
+  });
+
+  renderSetup();
+})();
+</script>
+</body>
+</html>
