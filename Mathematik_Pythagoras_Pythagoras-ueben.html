@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Satz des Pythagoras</title>
+<style>
+:root{
+  --paper:#FAFBF7; --grid:#E3E9EF; --ink:#1D2B4A; --soft:#5B6782;
+  --marker:#FFD84D; --on-marker:#1D2B4A; --ok:#2F8F5B; --bad:#C93C3C;
+  --card:#FFFFFF; --line:#C9D3DE; --key:#FFFFFF; --key-press:#EEF2F7;
+  --meadow:#D7EBCB; --fill:#DCE3EC;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --paper:#141A26; --grid:#1D2535; --ink:#E8EDF7; --soft:#9AA6BF;
+    --marker:#E8B923; --on-marker:#1D2B4A; --ok:#4CC38A; --bad:#F07878;
+    --card:#1B2333; --line:#34415B; --key:#212B3E; --key-press:#2B374F;
+    --meadow:#24402C; --fill:#2A3550;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#141A26; --grid:#1D2535; --ink:#E8EDF7; --soft:#9AA6BF;
+  --marker:#E8B923; --on-marker:#1D2B4A; --ok:#4CC38A; --bad:#F07878;
+  --card:#1B2333; --line:#34415B; --key:#212B3E; --key-press:#2B374F;
+  --meadow:#24402C; --fill:#2A3550;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html,body{margin:0;min-height:100%}
+body{
+  background-color:var(--paper);
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:26px 26px;
+  color:var(--ink);
+  font-family:"Avenir Next","Avenir","Segoe UI",system-ui,-apple-system,sans-serif;
+  font-size:18px;line-height:1.45;-webkit-tap-highlight-color:transparent;
+}
+main{max-width:680px;margin:0 auto;padding:20px 18px 40px}
+a{color:var(--soft)}
+.home{display:inline-block;font-size:15px;margin-bottom:14px}
+h1{font-size:40px;line-height:1.05;margin:0 0 8px;font-weight:700}
+.intro{margin:0 0 20px;color:var(--soft)}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
+sup{font-size:.6em;line-height:0}
+
+.merke{display:flex;gap:16px;align-items:center;background:var(--card);border:2px solid var(--line);border-radius:16px;padding:14px 16px;margin-bottom:22px}
+.merke svg{width:120px;flex:none}
+.merke p{margin:0}
+.merke .formel{font-size:28px;font-weight:700;margin-bottom:4px}
+.merke .formel span{background:linear-gradient(transparent 55%,var(--marker) 55%);padding:0 4px}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .merke .formel span{background:linear-gradient(transparent 70%,rgba(232,185,35,.4) 70%)}}
+
+.mods{display:grid;gap:12px}
+.mod{display:grid;grid-template-columns:44px 1fr;gap:4px 14px;background:var(--card);border:2px solid var(--line);border-radius:16px;padding:14px 16px}
+.num{grid-row:span 3;width:44px;height:44px;border-radius:50%;background:var(--marker);color:var(--on-marker);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:20px}
+.mod h2{margin:0;font-size:20px}
+.mod p{margin:0;color:var(--soft);font-size:16px}
+.mod .btns{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.go{border:0;border-radius:12px;background:var(--ink);color:var(--paper);padding:9px 16px;font-weight:600;font-size:16px}
+
+/* Spiel */
+.bar{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.ghost{background:none;border:2px solid var(--line);border-radius:12px;padding:6px 14px;font-size:15px;color:var(--soft)}
+.status{font-weight:600;font-variant-numeric:tabular-nums}
+.progress{height:8px;border-radius:4px;background:var(--line);margin:12px 0 0;overflow:hidden}
+.progress span{display:block;height:100%;width:0;background:var(--ink);transition:width .25s}
+.fig{display:block;width:100%;max-height:250px;margin:18px auto 6px}
+.fig text{font-size:24px;font-weight:700;fill:var(--ink);paint-order:stroke;stroke:var(--paper);stroke-width:7px;stroke-linejoin:round}
+.fig text.q{fill:var(--bad)}
+.fig .edge{stroke:var(--ink);stroke-width:5;stroke-linecap:round}
+.fig .hit{stroke:transparent;stroke-width:36;stroke-linecap:round;cursor:pointer}
+.fig .side.ok .edge{stroke:var(--ok);stroke-width:8}
+.fig .side.bad .edge{stroke:var(--bad);stroke-width:8}
+.fig .ra{fill:none;stroke:var(--ink);stroke-width:2}
+.question{font-size:21px;margin:14px 0 6px;text-align:center}
+.note{font-size:15px;color:var(--soft);text-align:center;margin:0 0 6px}
+.line{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:.2em .35em;font-size:clamp(34px,9vw,54px);font-weight:600;margin:10px 0;font-variant-numeric:tabular-nums}
+.answer{min-width:2.4em;padding:0 .2em;text-align:center;border-bottom:4px solid var(--ink);background:linear-gradient(transparent 55%,var(--marker) 55%);min-height:1.1em}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .answer{background:linear-gradient(transparent 70%,rgba(232,185,35,.35) 70%)}}
+.answer.ok{border-color:var(--ok);color:var(--ok)}
+.answer.bad{border-color:var(--bad);color:var(--bad);text-decoration:line-through;text-decoration-thickness:3px}
+.unit{font-size:.6em;color:var(--soft)}
+
+.steps{max-width:480px;margin:6px auto 0}
+.step{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 4px;border-bottom:1px solid var(--line);font-size:24px;font-variant-numeric:tabular-nums}
+.step.todo{opacity:.35}
+.step .val{min-width:3.2em;text-align:center;font-weight:700}
+.step.cur .val{border-bottom:4px solid var(--ink);background:linear-gradient(transparent 55%,var(--marker) 55%);min-height:1.3em}
+.step .val.ok{color:var(--ok)} .step .val.bad{color:var(--bad)}
+
+.chips{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin:28px 0 10px}
+.chip{background:var(--card);border:2px solid var(--line);border-radius:14px;padding:12px 18px;font-size:28px;font-weight:700;font-variant-numeric:tabular-nums}
+
+.opts{display:grid;gap:10px;max-width:460px;margin:12px auto 0}
+.opts.two{grid-template-columns:1fr 1fr}
+.opt{background:var(--card);border:2px solid var(--line);border-radius:14px;padding:14px;font-size:24px;font-weight:600}
+.opt.ok{border-color:var(--ok);background:var(--ok);color:var(--paper)}
+.opt.bad{border-color:var(--bad);color:var(--bad)}
+
+.fpad{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;max-width:420px;margin:14px auto 0}
+.fkey{background:var(--key);border:2px solid var(--line);border-radius:14px;font-size:26px;font-weight:600;padding:11px 0;touch-action:manipulation}
+.fkey:active{background:var(--key-press)}
+.fkey.fok{grid-column:span 4;background:var(--ink);color:var(--paper);border-color:var(--ink);font-size:22px}
+.fb{text-align:center;min-height:1.6em;font-size:21px;font-weight:600;margin:12px 0 4px}
+.fb.ok{color:var(--ok)} .fb.bad{color:var(--bad)}
+.explain{max-width:480px;margin:6px auto 0;background:var(--card);border:2px solid var(--line);border-radius:14px;padding:10px 14px;font-size:17px}
+.explain:empty{display:none}
+.tipbtn{display:block;margin:4px auto 0;background:none;border:2px dashed var(--line);border-radius:12px;padding:6px 14px;font-size:15px;color:var(--soft)}
+.next{display:block;width:100%;max-width:420px;margin:14px auto 0;padding:15px;border:0;border-radius:16px;background:var(--ink);color:var(--paper);font-size:21px;font-weight:700}
+
+.pad{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;max-width:400px;margin:14px auto 0}
+.key{background:var(--key);border:2px solid var(--line);border-radius:14px;font-size:28px;font-weight:600;padding:11px 0;touch-action:manipulation}
+.key:active{background:var(--key-press)}
+.key.ok{grid-column:1 / -1;background:var(--ink);color:var(--paper);border-color:var(--ink);font-size:22px}
+.key.off{visibility:hidden}
+
+/* Resultat */
+.score{font-size:clamp(48px,12vw,76px);font-weight:700;line-height:1;margin:30px 0 6px}
+.msg{font-size:22px;margin:0 0 6px}
+.mistakes{background:var(--card);border:2px solid var(--line);border-radius:14px;padding:6px 18px;margin-top:22px}
+.mistakes h2{font-size:17px;color:var(--soft);margin:12px 0 4px}
+.mistakes ul{list-style:none;padding:0;margin:0}
+.mistakes li{padding:10px 0;border-bottom:1px solid var(--line);font-size:19px}
+.mistakes li:last-child{border-bottom:0}
+.actions{display:grid;gap:10px;margin-top:24px}
+.primary{width:100%;padding:16px;border:0;border-radius:16px;background:var(--ink);color:var(--paper);font-size:21px;font-weight:700}
+.second{width:100%;padding:14px;border-radius:16px;border:2px solid var(--ink);background:var(--card);font-size:19px;font-weight:600}
+</style>
+</head>
+<body>
+<main>
+
+<section id="setup">
+  <a class="home" href="/">Zur Startseite</a>
+  <h1>Satz des Pythagoras</h1>
+  <p class="intro">Pythagoras lebte vor etwa 2500 Jahren in Griechenland. Er war ein berühmter Mathematiker. Ein wichtiger Satz über rechtwinklige Dreiecke trägt seinen Namen.</p>
+  <div class="merke">
+    <svg viewBox="0 0 130 100" aria-hidden="true">
+      <polygon points="15,85 115,85 15,15" fill="none" stroke="currentColor" stroke-width="3"/>
+      <path d="M15 73 H27 V85" fill="none" stroke="currentColor" stroke-width="2"/>
+      <text x="65" y="98" text-anchor="middle" font-size="15" font-weight="700" fill="currentColor">a</text>
+      <text x="5" y="55" text-anchor="middle" font-size="15" font-weight="700" fill="currentColor">b</text>
+      <text x="74" y="44" text-anchor="middle" font-size="15" font-weight="700" fill="currentColor">c</text>
+    </svg>
+    <div>
+      <p class="formel"><span>a<sup>2</sup> + b<sup>2</sup> = c<sup>2</sup></span></p>
+      <p>c ist die <b>Hypotenuse</b>. Sie liegt gegenüber vom rechten Winkel und ist die längste Seite. a und b sind die <b>Katheten</b>.</p>
+    </div>
+  </div>
+  <div class="mods" id="mods"></div>
+</section>
+
+<section id="play" hidden>
+  <div class="bar">
+    <button class="ghost" id="stop">Beenden</button>
+    <span class="status" id="status"></span>
+  </div>
+  <div class="progress"><span id="prog"></span></div>
+  <div id="stage"></div>
+  <div class="fb" id="fb" aria-live="polite"></div>
+  <div class="explain" id="explain"></div>
+  <button class="next" id="next" hidden>Weiter</button>
+  <div class="pad" id="pad" hidden>
+    <button class="key" data-k="7">7</button><button class="key" data-k="8">8</button><button class="key" data-k="9">9</button>
+    <button class="key" data-k="4">4</button><button class="key" data-k="5">5</button><button class="key" data-k="6">6</button>
+    <button class="key" data-k="1">1</button><button class="key" data-k="2">2</button><button class="key" data-k="3">3</button>
+    <button class="key" data-k="," id="comma">,</button><button class="key" data-k="0">0</button><button class="key" data-k="del" aria-label="Löschen">⌫</button>
+    <button class="key ok" data-k="ok" id="okkey">Prüfen</button>
+  </div>
+</section>
+
+<section id="result" hidden>
+  <div class="score" id="score"></div>
+  <p class="msg" id="msg"></p>
+  <div class="mistakes" id="mist" hidden>
+    <h2>Diese Aufgaben waren falsch</h2>
+    <ul id="mlist"></ul>
+  </div>
+  <div class="actions">
+    <button class="primary" id="again">Nochmals üben</button>
+    <button class="second" id="fix" hidden>Fehler nochmals üben</button>
+    <button class="second" id="back">Andere Übung wählen</button>
+  </div>
+</section>
+
+</main>
+<script>
+(function(){
+  const $ = id => document.getElementById(id);
+  const r = (a,b) => a + Math.floor(Math.random()*(b-a+1));
+  const pick = a => a[r(0,a.length-1)];
+  const shuffle = a => { a=a.slice(); for(let i=a.length-1;i>0;i--){const j=r(0,i);[a[i],a[j]]=[a[j],a[i]];} return a; };
+  const r1 = n => Math.round(n*10)/10;
+  const fmt = n => String(r1(n)).replace('.', ',');
+  const p2 = x => `${x}<sup>2</sup>`;
+
+  /* ---------- pythagoreische Tripel ---------- */
+  const BASE = [[3,4,5],[5,12,13],[8,15,17],[7,24,25]];
+  function triple(maxC){
+    const list=[];
+    BASE.forEach(([a,b,c])=>{ for(let k=1;c*k<=maxC;k++) list.push([a*k,b*k,c*k]); });
+    const t=pick(list);
+    return Math.random()<.5 ? t : [t[1],t[0],t[2]];
+  }
+
+  /* ---------- Dreieck zeichnen ---------- */
+  // Seiten: 0 = Kathete (P–A), 1 = Kathete (P–B), 2 = Hypotenuse (A–B)
+  function tri(o){
+    const S = 210/Math.max(o.a,o.b);
+    let pts = [[0,0],[o.a*S,0],[0,-o.b*S]];
+    if(o.flip) pts = pts.map(([x,y])=>[-x,y]);
+    const t=(o.rot||0)*Math.PI/180, c=Math.cos(t), s=Math.sin(t);
+    pts = pts.map(([x,y])=>[x*c-y*s, x*s+y*c]);
+    const [P,A,B]=pts, pad=70;
+    const xs=pts.map(p=>p[0]), ys=pts.map(p=>p[1]);
+    const minx=Math.min(...xs)-pad, miny=Math.min(...ys)-pad;
+    const W=Math.max(...xs)-Math.min(...xs)+2*pad, H=Math.max(...ys)-Math.min(...ys)+2*pad;
+    const gx=(P[0]+A[0]+B[0])/3, gy=(P[1]+A[1]+B[1])/3;
+    const unit=(p,q)=>{const dx=q[0]-p[0],dy=q[1]-p[1],l=Math.hypot(dx,dy);return[dx/l,dy/l];};
+    const u=unit(P,A), v=unit(P,B), m=18;
+    const ra=`M${P[0]+u[0]*m} ${P[1]+u[1]*m} L${P[0]+u[0]*m+v[0]*m} ${P[1]+u[1]*m+v[1]*m} L${P[0]+v[0]*m} ${P[1]+v[1]*m}`;
+    const sides=[[P,A],[P,B],[A,B]];
+    let out=`<svg class="fig" viewBox="${minx} ${miny} ${W} ${H}" role="img" aria-label="Rechtwinkliges Dreieck">`;
+    out+=`<path class="ra" d="${ra}"/>`;
+    sides.forEach(([p,q],i)=>{
+      const line=`x1="${p[0]}" y1="${p[1]}" x2="${q[0]}" y2="${q[1]}"`;
+      out+= o.click
+        ? `<g class="side" data-side="${i}"><line class="hit" ${line}/><line class="edge" ${line}/></g>`
+        : `<line class="edge" ${line}/>`;
+    });
+    (o.labels||[]).forEach((lab,i)=>{
+      if(!lab) return;
+      const [p,q]=sides[i], mx=(p[0]+q[0])/2, my=(p[1]+q[1])/2;
+      let nx=mx-gx, ny=my-gy; const l=Math.hypot(nx,ny)||1; nx/=l; ny/=l;
+      const cls = lab.includes('?') ? ' class="q"' : '';
+      out+=`<text x="${mx+nx*34}" y="${my+ny*34}" text-anchor="middle" dominant-baseline="middle"${cls}>${lab}</text>`;
+    });
+    return out+'</svg>';
+  }
+
+  /* ---------- Übungen ---------- */
+  const LETTERS = [['a','b','c'],['x','y','z'],['p','q','r'],['e','f','g'],['u','v','w'],['k','m','n']];
+
+  const MODS = [
+    {id:'finden', title:'Hypotenuse finden', sub:'Tippe auf die richtige Seite im Dreieck', n:10,
+     make(){
+       const hyp = Math.random()<.6;
+       return {kind:'tap',
+         svg: tri({a:r(4,10), b:r(4,10), rot:r(0,359), flip:Math.random()<.5, click:true}),
+         q: hyp ? 'Tippe auf die <b>Hypotenuse</b>.' : 'Tippe auf eine <b>Kathete</b>.',
+         correct: hyp ? [2] : [0,1],
+         explain: 'Die Hypotenuse liegt gegenüber vom rechten Winkel. Die zwei anderen Seiten sind die Katheten.',
+         sum: hyp ? 'Hypotenuse finden' : 'Kathete finden'};
+     }},
+    {id:'formel', title:'Formel aufstellen', sub:'Schreibe die Formel für die gesuchte Seite', n:8,
+     make(){
+       const [k1,k2,h] = shuffle(pick(LETTERS));
+       const svg = tri({a:r(5,10), b:r(5,10), rot:r(0,359), flip:Math.random()<.5, labels:[k1,k2,h]});
+       let target, answers, right, plain;
+       if(Math.random()<.4){
+         target=h;
+         answers=[`√(${k1}²+${k2}²)`,`√(${k2}²+${k1}²)`];
+         right=`${h} = √(${p2(k1)} + ${p2(k2)})`;
+         plain=`${h} = √(${k1}² + ${k2}²)`;
+       } else {
+         const [k,o] = Math.random()<.5 ? [k1,k2] : [k2,k1];
+         target=k;
+         answers=[`√(${h}²−${o}²)`];
+         right=`${k} = √(${p2(h)} − ${p2(o)})`;
+         plain=`${k} = √(${h}² − ${o}²)`;
+       }
+       return {kind:'formula', svg, target, answers, keys:shuffle([k1,k2,h]),
+         q:`Wie berechnest du <b>${target}</b>? Schreibe die Formel.`,
+         explain: target===h
+           ? `<b>${h}</b> ist die Hypotenuse. Die Quadrate der Katheten werden <b>addiert</b>, dann ziehst du die Wurzel:<br>${right}`
+           : `<b>${target}</b> ist eine Kathete. Vom Quadrat der Hypotenuse <b>${h}</b> wird das andere Quadrat <b>subtrahiert</b>, dann ziehst du die Wurzel:<br>${right}`,
+         right, sum:plain};
+     }},
+    {id:'hypo', title:'Hypotenuse berechnen', sub:'Mit dem Taschenrechner, auf eine Stelle nach dem Komma', n:8,
+     make(){
+       const a=r(3,20), b=r(3,20), sum=a*a+b*b, c=r1(Math.sqrt(sum)), u=pick(['cm','m']);
+       return {kind:'num', dec:true,
+         svg: tri({a,b, rot:r(0,359), flip:Math.random()<.5, labels:[`a = ${a} ${u}`,`b = ${b} ${u}`,'c = ?']}),
+         q:'Berechne die Hypotenuse c.',
+         note:'Löse mit dem Taschenrechner. Runde auf eine Stelle nach dem Komma.',
+         expr:'c =', ans:c, unit:u,
+         solution:`Rechne: c = √(${p2(a)} + ${p2(b)}) = √(${a*a} + ${b*b}) = √${sum} ≈ ${fmt(c)} ${u}`,
+         sum:`a = ${a} ${u}, b = ${b} ${u} → c ≈ ${fmt(c)} ${u}`};
+     }},
+    {id:'kathete', title:'Kathete berechnen', sub:'Mit dem Taschenrechner, auf eine Stelle nach dem Komma', n:8,
+     make(){
+       const c=r(8,25), b=r(3,c-2), d=c*c-b*b, exact=Math.sqrt(d), a=r1(exact), u=pick(['cm','m']);
+       return {kind:'num', dec:true,
+         svg: tri({a:exact,b, rot:r(0,359), flip:Math.random()<.5, labels:['a = ?',`b = ${b} ${u}`,`c = ${c} ${u}`]}),
+         q:'Berechne die Kathete a.',
+         note:'Löse mit dem Taschenrechner. Runde auf eine Stelle nach dem Komma.',
+         expr:'a =', ans:a, unit:u,
+         solution:`Rechne: a = √(${p2(c)} − ${p2(b)}) = √(${c*c} − ${b*b}) = √${d} ≈ ${fmt(a)} ${u}`,
+         sum:`c = ${c} ${u}, b = ${b} ${u} → a ≈ ${fmt(a)} ${u}`};
+     }},
+    {id:'pruefen', title:'Ist das Dreieck rechtwinklig?', sub:'Prüfe drei Seitenlängen mit der Formel', n:8,
+     make(){
+       let [a,b,c]=triple(30); 
+       const yes=Math.random()<.5;
+       if(!yes){
+         if(Math.random()<.6) c += pick([1,2]);
+         else { const big=Math.max(a,b); if(big+1<c){ if(a>b) a+=1; else b+=1; } else c+=1; }
+       }
+       const [x,y,z]=[a,b,c].sort((p,q)=>p-q), u=pick(['cm','m']);
+       const lhs=x*x+y*y, rhs=z*z, ok=lhs===rhs;
+       return {kind:'choice', always:true,
+         chips: shuffle([x,y,z]).map(v=>`${v} ${u}`),
+         q:'Diese drei Seiten bilden ein Dreieck. Ist es rechtwinklig?',
+         opts:['Ja','Nein'], two:true, correct: ok?0:1,
+         explain:`Die längste Seite ist ${z} ${u}.<br>${p2(x)} + ${p2(y)} = ${x*x} + ${y*y} = <b>${lhs}</b><br>${p2(z)} = <b>${rhs}</b><br>${ok?'Gleich gross → <b>rechtwinklig</b>.':'Nicht gleich gross → <b>nicht rechtwinklig</b>.'}`,
+         sum:`${x}, ${y}, ${z} ${u}: ${ok?'rechtwinklig':'nicht rechtwinklig'}`};
+     }}
+  ];
+
+  /* ---------- Startseite ---------- */
+  function renderHome(){
+    const box=$('mods'); box.innerHTML='';
+    MODS.forEach((m,i)=>{
+      const d=document.createElement('div'); d.className='mod';
+      const btns = m.levels
+        ? m.levels.map((t,j)=>`<button class="go" data-m="${i}" data-l="${j+1}">${t}</button>`).join('')
+        : `<button class="go" data-m="${i}" data-l="1">Starten</button>`;
+      d.innerHTML=`<span class="num">${i+1}</span><h2>${m.title}</h2><p>${m.sub}</p><div class="btns">${btns}</div>`;
+      box.appendChild(d);
+    });
+  }
+  $('mods').addEventListener('click',e=>{
+    const b=e.target.closest('.go'); if(!b) return;
+    start(MODS[+b.dataset.m], +b.dataset.l);
+  });
+  function show(id){ ['setup','play','result'].forEach(s=>$(s).hidden = s!==id); window.scrollTo(0,0); }
+
+  /* ---------- Spielablauf ---------- */
+  let st=null, timerT=null;
+  function makeTasks(mod,l){
+    const out=[], seen=new Set(); let tries=0;
+    while(out.length<mod.n && tries<200){
+      const t=mod.make(l); tries++;
+      if(seen.has(t.sum) && tries<150) continue;
+      seen.add(t.sum); out.push(t);
+    }
+    return out;
+  }
+  function start(mod,l,tasks){
+    clearTimeout(timerT);
+    st={mod, l, tasks: tasks || makeTasks(mod,l), i:0, correct:0, wrong:[]};
+    show('play'); renderTask();
+  }
+  const task=()=>st.tasks[st.i];
+
+  function renderTask(){
+    clearTimeout(timerT);
+    const t=task();
+    st.ts={input:'', step:0, vals:[], allRight:true, locked:false, canNext:false};
+    $('status').textContent=`Aufgabe ${st.i+1} von ${st.tasks.length}`;
+    $('prog').style.width=(st.i/st.tasks.length*100)+'%';
+    $('fb').className='fb'; $('fb').textContent='';
+    $('explain').innerHTML=''; $('next').hidden=true;
+    const usePad = t.kind==='num' || t.kind==='steps';
+    $('pad').hidden=!usePad;
+    $('comma').classList.toggle('off', !t.dec);
+    $('okkey').textContent='Prüfen';
+    draw();
+  }
+
+  function draw(){
+    const t=task(), s=st.ts; let h='';
+    if(t.svg) h+=t.svg;
+    if(t.chips) h+=`<div class="chips">${t.chips.map(c=>`<span class="chip">${c}</span>`).join('')}</div>`;
+    h+=`<p class="question">${t.q}</p>`;
+    if(t.note) h+=`<p class="note">${t.note}</p>`;
+    if(t.kind==='num'){
+      const cls = s.result===true?' ok': s.result===false?' bad':'';
+      h+=`<div class="line"><span>${t.expr}</span><span class="answer${cls}" id="ans">${s.input}</span>${t.unit?`<span class="unit">${t.unit}</span>`:''}</div>`;
+      if(t.tip && !s.locked) h+=`<button class="tipbtn" id="tipbtn">Tipp anzeigen</button>`;
+    }
+    if(t.kind==='steps'){
+      h+='<div class="steps">';
+      t.steps.forEach((p,i)=>{
+        let cls='todo', val='';
+        if(i<s.step || (i===s.step && s.vals[i])){ cls='done'; const v=s.vals[i]; val = v.bad!==undefined ? `<span class="bad"><s>${v.bad}</s></span> <span class="ok">${fmt(p.ans)}</span>` : `<span class="ok">${fmt(p.ans)}</span>`; }
+        else if(i===s.step){ cls='cur'; val=s.input; }
+        h+=`<div class="step ${cls}"><span class="lab">${p.lab}</span><span class="val">${val}${(cls!=='todo'&&p.unit&&val)?' <span class="unit">'+p.unit+'</span>':''}</span></div>`;
+      });
+      h+='</div>';
+    }
+    if(t.kind==='formula'){
+      const cls = s.result===true?' ok': s.result===false?' bad':'';
+      const shown=(s.ftoks||[]).map(x=>x==='²'?'<sup>2</sup>':(x==='+'||x==='−')?` ${x} `:x).join('');
+      h+=`<div class="line"><span>${t.target} =</span><span class="answer${cls}">${shown}</span></div>`;
+      if(!s.locked){
+        const keys=[...t.keys,'²','+','−','√(',')'];
+        h+=`<div class="fpad">${keys.map(k=>`<button class="fkey" data-f="${k}">${k==='²'?'x<sup>2</sup>':k}</button>`).join('')}<button class="fkey" data-f="del" aria-label="Löschen">⌫</button><button class="fkey fok" data-f="ok">Prüfen</button></div>`;
+      }
+    }
+    if(t.kind==='choice'){
+      h+=`<div class="opts${t.two?' two':''}">${t.opts.map((o,i)=>{
+        let cls='';
+        if(s.locked){ if(i===t.correct) cls=' ok'; else if(i===s.chosen) cls=' bad'; }
+        return `<button class="opt${cls}" data-o="${i}">${o}</button>`;
+      }).join('')}</div>`;
+    }
+    $('stage').innerHTML=h;
+    if(t.kind==='tap' && s.locked){
+      document.querySelectorAll('#stage .side').forEach(g=>{
+        const i=+g.dataset.side;
+        if(t.correct.includes(i)) g.classList.add('ok');
+        else if(i===s.chosen) g.classList.add('bad');
+      });
+    }
+  }
+
+  function feedback(ok, text){
+    $('fb').className='fb '+(ok?'ok':'bad');
+    $('fb').innerHTML=text;
+  }
+  function lockNext(){ st.ts.locked=true; st.ts.canNext=true; $('next').hidden=false; $('okkey').textContent='Weiter'; }
+  function autoNext(ms){ st.ts.locked=true; timerT=setTimeout(advance, ms); }
+  function advance(){
+    clearTimeout(timerT);
+    st.i++;
+    if(st.i>=st.tasks.length) finish(); else renderTask();
+  }
+  const praise=()=>pick(['Richtig!','Super!','Genau!','Stimmt!']);
+  const near=(v,a)=>Math.abs(v-r1(a))<0.001;
+
+  function press(k){
+    if(!st) return;
+    const t=task(), s=st.ts;
+    if(k==='ok'){ if(s.canNext) return next(); if(!s.locked) submit(); return; }
+    if(s.locked) return;
+    if(k==='del') s.input=s.input.slice(0,-1);
+    else if(k===','){ if(t.dec && !s.input.includes(',')) s.input += s.input===''?'0,':','; }
+    else if(s.input.length<7) s.input = s.input==='0' ? k : s.input+k;
+    draw();
+  }
+
+  function submit(){
+    const t=task(), s=st.ts;
+    if(s.input==='' || s.input.endsWith(',')) return;
+    const v=parseFloat(s.input.replace(',','.'));
+    if(t.kind==='num'){
+      const ok=near(v,t.ans); s.result=ok; s.locked=true;
+      draw();
+      if(ok){ st.correct++; feedback(true, praise()); autoNext(800); }
+      else {
+        st.wrong.push(t);
+        feedback(false, `Richtig wäre: ${fmt(t.ans)}${t.unit?' '+t.unit:''}`);
+        if(t.tip||t.solution) $('explain').innerHTML=t.solution||t.tip;
+        lockNext();
+      }
+      return;
+    }
+    // Schritte
+    const p=t.steps[s.step], ok=near(v,p.ans);
+    s.vals[s.step] = ok ? {} : {bad:s.input};
+    if(!ok) s.allRight=false;
+    s.input='';
+    const last = s.step===t.steps.length-1;
+    if(ok && !last){ s.step++; draw(); return; }
+    if(ok && last){
+      s.locked=true; draw();
+      if(s.allRight){ st.correct++; feedback(true,'Super, alles richtig!'); autoNext(1100); }
+      else { st.wrong.push(t); feedback(true,'Fertig! Schau dir den roten Schritt nochmals an.'); lockNext(); }
+      return;
+    }
+    // falscher Schritt
+    draw();
+    feedback(false, `Richtig wäre: ${fmt(p.ans)}${p.unit?' '+p.unit:''}`);
+    s.locked=true; s.canNext=true; $('next').hidden=false; $('okkey').textContent='Weiter';
+    s.afterWrong = () => {
+      if(last){ st.wrong.push(t); advance(); return; }
+      s.step++; s.locked=false; s.canNext=false;
+      $('next').hidden=true; $('okkey').textContent='Prüfen';
+      $('fb').textContent=''; draw();
+    };
+  }
+
+  // Weiter-Logik für falschen Zwischenschritt
+  const origAdvance = advance;
+  function next(){
+    const s=st.ts;
+    if(s.afterWrong){ const f=s.afterWrong; s.afterWrong=null; f(); return; }
+    origAdvance();
+  }
+
+  $('stage').addEventListener('click',e=>{
+    if(!st) return;
+    const t=task(), s=st.ts;
+    if(e.target.id==='tipbtn'){ $('explain').innerHTML=t.tip; e.target.remove(); return; }
+    if(s.locked) return;
+    if(t.kind==='tap'){
+      const g=e.target.closest('.side'); if(!g) return;
+      s.chosen=+g.dataset.side; const ok=t.correct.includes(s.chosen);
+      s.locked=true; draw();
+      if(ok){ st.correct++; feedback(true, praise()); autoNext(900); }
+      else { st.wrong.push(t); feedback(false,'Leider falsch. Die grüne Seite wäre richtig.'); $('explain').innerHTML=t.explain; lockNext(); }
+    }
+    if(t.kind==='formula'){
+      const k=e.target.closest('[data-f]'); if(!k) return;
+      const f=k.dataset.f; s.ftoks=s.ftoks||[];
+      if(f==='del'){ s.ftoks.pop(); draw(); return; }
+      if(f!=='ok'){ if(s.ftoks.length<14) s.ftoks.push(f); draw(); return; }
+      if(!s.ftoks.length) return;
+      let str=s.ftoks.join('');
+      const open=(str.match(/\(/g)||[]).length, close=(str.match(/\)/g)||[]).length;
+      if(open>close) str+=')'.repeat(open-close);
+      const ok=t.answers.includes(str);
+      s.result=ok; s.locked=true; draw();
+      if(ok){ st.correct++; feedback(true, praise()); autoNext(1000); }
+      else { st.wrong.push(t); feedback(false,'Leider falsch.'); $('explain').innerHTML=t.explain; lockNext(); }
+      return;
+    }
+    if(t.kind==='choice'){
+      const b=e.target.closest('.opt'); if(!b) return;
+      s.chosen=+b.dataset.o; const ok=s.chosen===t.correct;
+      s.locked=true; draw();
+      if(ok){ st.correct++; feedback(true, praise()); }
+      else { st.wrong.push(t); feedback(false,'Leider falsch.'); }
+      if(ok && !t.always){ autoNext(900); }
+      else { $('explain').innerHTML=t.explain; lockNext(); }
+    }
+  });
+
+  function finish(){
+    clearTimeout(timerT);
+    const n=st.tasks.length, ratio=st.correct/n;
+    $('score').textContent=`${st.correct} von ${n}`;
+    $('msg').textContent =
+      ratio>=.9 ? 'Super gemacht!' :
+      ratio>=.7 ? 'Gut gemacht!' :
+      ratio>=.5 ? 'Weiter so – übe noch etwas.' :
+                  'Übe die Fehler nochmals oder gehe eine Übung zurück.';
+    const ml=$('mlist'); ml.innerHTML='';
+    st.wrong.forEach(t=>{ const li=document.createElement('li'); li.textContent=t.sum; ml.appendChild(li); });
+    $('mist').hidden=st.wrong.length===0;
+    $('fix').hidden=st.wrong.length===0;
+    show('result');
+  }
+
+  /* ---------- Ereignisse ---------- */
+  $('pad').addEventListener('click',e=>{
+    const k=e.target.closest('[data-k]'); if(!k) return;
+    if(k.dataset.k==='ok' && st && st.ts.canNext){ next(); return; }
+    press(k.dataset.k);
+  });
+  $('next').addEventListener('click', ()=>{ if(st && st.ts.canNext) next(); });
+  $('stop').addEventListener('click', ()=>{ clearTimeout(timerT); st=null; show('setup'); });
+  $('again').addEventListener('click', ()=>start(st.mod, st.l));
+  $('fix').addEventListener('click', ()=>start(st.mod, st.l, st.wrong.slice()));
+  $('back').addEventListener('click', ()=>{ st=null; show('setup'); });
+  document.addEventListener('keydown',e=>{
+    if($('play').hidden || !st) return;
+    const t=task();
+    if(e.key==='Enter'){ e.preventDefault(); if(st.ts.canNext) next(); else if(t.kind==='num'||t.kind==='steps') press('ok'); return; }
+    if(t.kind!=='num' && t.kind!=='steps') return;
+    if(/^[0-9]$/.test(e.key)) press(e.key);
+    else if(e.key===','||e.key==='.') press(',');
+    else if(e.key==='Backspace') press('del');
+  });
+
+  renderHome();
+})();
+</script>
+</body>
+</html>
