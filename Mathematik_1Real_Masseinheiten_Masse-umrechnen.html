@@ -1,0 +1,1076 @@
+<!DOCTYPE html>
+<html lang="de-CH">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Masse umrechnen</title>
+<meta name="description" content="Längen, Hohlmasse, Gewichte und Zeit verstehen und umrechnen – mit Einheiten-Treppe, Stellentafel und 5 Stufen von leicht bis Profi.">
+<style>
+:root{
+  --paper:#FAFBF7; --grid:#E3E9EF; --ink:#1D2B4A; --soft:#5B6782;
+  --marker:#FFD84D; --on-marker:#1D2B4A; --ok:#2F8F5B; --bad:#C93C3C;
+  --card:#FFFFFF; --line:#C9D3DE; --key:#FFFFFF; --key-press:#EEF2F7;
+  --blue:#2E6BC6; --blue-bg:#E6EEFA; --fill:#9AA6BF; --down:#2F8F5B; --up:#D9822B;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --paper:#141A26; --grid:#1D2535; --ink:#E8EDF7; --soft:#9AA6BF;
+    --marker:#E8B923; --on-marker:#1D2B4A; --ok:#4CC38A; --bad:#F07878;
+    --card:#1B2333; --line:#34415B; --key:#212B3E; --key-press:#2B374F;
+    --blue:#7FAEF0; --blue-bg:#1E2B44; --fill:#5B6782; --down:#4CC38A; --up:#F0A65A;
+    color-scheme:dark;
+  }
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html,body{margin:0;min-height:100%}
+body{
+  background-color:var(--paper);
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:26px 26px;color:var(--ink);
+  font-family:"Avenir Next","Avenir","Segoe UI",system-ui,-apple-system,sans-serif;
+  font-size:18px;line-height:1.45;-webkit-tap-highlight-color:transparent;
+}
+main{max-width:720px;margin:0 auto;padding:20px 18px 48px}
+a{color:var(--soft)}
+.home{display:inline-block;font-size:15px;margin-bottom:14px}
+h1{font-size:40px;line-height:1.05;margin:0 0 8px;font-weight:700}
+h2{font-size:22px;margin:26px 0 8px}
+.intro{margin:0 0 18px;color:var(--soft)}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
+.hl{background:linear-gradient(transparent 55%,var(--marker) 55%);padding:0 3px}
+@media (prefers-color-scheme:dark){.hl{background:linear-gradient(transparent 70%,rgba(232,185,35,.4) 70%)}}
+
+.card{background:var(--card);border:2px solid var(--line);border-radius:16px;padding:14px 16px;margin-bottom:14px}
+.merke p{margin:4px 0}
+.merke .big{font-size:20px;font-weight:700}
+.dn{color:var(--down);font-weight:700} .upc{color:var(--up);font-weight:700}
+
+.filter{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:4px 0 18px}
+.filter span{font-size:15px;color:var(--soft);margin-right:4px}
+.tog{border:2px solid var(--line);background:var(--card);border-radius:999px;padding:6px 14px;font-size:16px;font-weight:600;color:var(--soft)}
+.tog.on{background:var(--ink);border-color:var(--ink);color:var(--paper)}
+
+.mods{display:grid;gap:12px}
+.mod{display:grid;grid-template-columns:44px 1fr auto;gap:2px 14px;align-items:center;background:var(--card);border:2px solid var(--line);border-radius:16px;padding:14px 16px;text-align:left;width:100%}
+.mod:active{background:var(--key-press)}
+.num{grid-row:span 2;width:44px;height:44px;border-radius:50%;background:var(--marker);color:var(--on-marker);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:20px}
+.num.learn{background:var(--blue);color:#fff}
+.num.test{background:var(--ink);color:var(--paper)}
+.mod b{font-size:19px}
+.mod small{grid-column:2;color:var(--soft);font-size:15px;line-height:1.3}
+.stars{grid-row:span 2;font-size:20px;letter-spacing:1px;color:var(--line);white-space:nowrap}
+.stars .s{color:#E8B923}
+
+/* Lernen */
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0 12px}
+.chip{border:2px solid var(--line);background:var(--card);border-radius:12px;padding:6px 14px;font-size:18px;font-weight:600}
+.chip.on{background:var(--ink);border-color:var(--ink);color:var(--paper)}
+.treppe{width:100%;display:block;margin:4px 0}
+.treppe text{fill:var(--ink);font-weight:700}
+.treppe .st{fill:var(--blue-bg);stroke:var(--blue);stroke-width:2}
+.treppe .fd{fill:var(--down);font-size:15px}
+.treppe .fu{fill:var(--up);font-size:15px}
+.vors{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-top:8px}
+.vors div{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:6px 10px;font-size:16px}
+.vors b{display:block;font-size:18px}
+.labin{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:8px 0}
+.labin input{font:inherit;font-size:28px;font-weight:700;width:6.5em;padding:6px 10px;border:2px solid var(--line);border-radius:12px;background:var(--card);color:var(--ink);text-align:right}
+.labin .uchips{display:flex;gap:6px;flex-wrap:wrap}
+.alle{display:grid;gap:6px;margin-top:10px}
+.alle button{display:flex;justify-content:space-between;align-items:center;border:2px solid var(--line);background:var(--card);border-radius:12px;padding:8px 14px;font-size:22px;font-weight:600;font-variant-numeric:tabular-nums;text-align:left}
+.alle button.on{border-color:var(--bad);box-shadow:inset 0 0 0 1px var(--bad)}
+.alle small{font-size:14px;color:var(--soft);font-weight:500}
+
+/* Stellentafel */
+.tafelwrap{overflow-x:auto;margin:10px 0 4px;-webkit-overflow-scrolling:touch}
+.tafel{border-collapse:collapse;margin:0 auto;font-variant-numeric:tabular-nums}
+.tafel th,.tafel td{border:2px solid var(--line);min-width:44px;height:44px;text-align:center;padding:0 4px}
+.tafel th{font-size:17px;color:var(--soft);background:var(--card);height:34px}
+.tafel th.from{background:var(--blue-bg);color:var(--blue)}
+.tafel th.to{background:var(--marker);color:var(--on-marker)}
+.tafel td{font-size:26px;font-weight:700;background:var(--card);position:relative}
+.tafel td.f{color:var(--fill)}
+.tafel td.cT::after,.tafel td.cF::after{content:"";position:absolute;right:-7px;bottom:5px;width:12px;height:12px;border-radius:50%;z-index:2}
+.tafel td.cT::after{background:var(--bad)}
+.tafel td.cF::after{background:var(--fill);opacity:.55}
+.tafel td.cF.cT::after{opacity:1;background:var(--bad)}
+.tlegend{font-size:14px;color:var(--soft);text-align:center;margin:2px 0 0}
+.tlegend i{display:inline-block;width:11px;height:11px;border-radius:50%;vertical-align:middle;margin:0 3px 0 8px}
+
+/* Spiel */
+.bar{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.ghost{background:none;border:2px solid var(--line);border-radius:12px;padding:6px 14px;font-size:15px;color:var(--soft)}
+.status{font-weight:600;font-variant-numeric:tabular-nums;font-size:16px;text-align:right}
+.streak{color:var(--up)}
+.progress{height:8px;border-radius:4px;background:var(--line);margin:12px 0 0;overflow:hidden}
+.progress span{display:block;height:100%;width:0;background:var(--ink);transition:width .25s}
+.lvl{display:grid;grid-template-columns:52px 1fr;gap:2px 14px;align-items:center;background:var(--card);border:2px solid var(--line);border-left:8px solid var(--marker);border-radius:16px;padding:12px 16px;margin:14px 0 4px}
+.lvl .num{width:52px;height:52px;font-size:24px}
+.lvl .lt{font-size:22px;font-weight:700;line-height:1.2}
+.lvl .ld{grid-column:2;font-size:16px;color:var(--soft);line-height:1.35}
+.lvl .ls{grid-column:2;display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+.lvl .ls span{font-size:13px;font-weight:600;border-radius:999px;padding:2px 10px;background:var(--blue-bg);color:var(--blue)}
+.zchain{font-size:20px;font-weight:600;text-align:center;margin:8px 0;line-height:1.7}
+.zfacts{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:8px 0}
+.zfacts div{background:var(--marker);color:var(--on-marker);border-radius:12px;padding:8px;text-align:center;font-size:21px;font-weight:700}
+.fallen{margin:6px 0 0;padding:0;list-style:none}
+.fallen li{padding:6px 0;border-bottom:1px solid var(--line);font-size:19px}
+.fallen li:last-child{border-bottom:0}
+.fallen s{color:var(--bad)}
+.ttype{display:block;width:max-content;max-width:100%;margin:14px auto 0;font-size:15px;font-weight:700;color:var(--on-marker);background:var(--marker);border-radius:999px;padding:3px 14px}
+.question{font-size:21px;margin:12px 0 6px;text-align:center}
+.line{display:flex;flex-wrap:wrap;justify-content:center;align-items:baseline;gap:.2em .35em;font-size:clamp(30px,8vw,48px);font-weight:600;margin:12px 0;font-variant-numeric:tabular-nums}
+.answer{display:inline-block;min-width:2.6em;padding:0 .2em;text-align:center;border-bottom:4px solid var(--ink);background:linear-gradient(transparent 55%,var(--marker) 55%);min-height:1.15em}
+@media (prefers-color-scheme:dark){.answer{background:linear-gradient(transparent 70%,rgba(232,185,35,.35) 70%)}}
+.answer.wait{opacity:.35;background:none;border-bottom-style:dashed}
+.answer.ok{border-color:var(--ok);color:var(--ok);background:none}
+.answer.bad{border-color:var(--bad);color:var(--bad);background:none}
+.answer .was{text-decoration:line-through;font-size:.6em;margin-right:.3em;opacity:.8}
+.unit{color:var(--soft)}
+.op{color:var(--soft)}
+.opts{display:grid;gap:10px;max-width:480px;margin:14px auto 0}
+.opts.two{grid-template-columns:1fr 1fr}
+.opts.three{grid-template-columns:1fr 1fr 1fr}
+.opts.four{grid-template-columns:1fr 1fr}
+.opt{background:var(--card);border:2px solid var(--line);border-radius:14px;padding:14px 8px;font-size:24px;font-weight:600}
+.opt.ok{border-color:var(--ok);background:var(--ok);color:var(--paper)}
+.opt.bad{border-color:var(--bad);color:var(--bad)}
+.ord{display:grid;grid-template-columns:1fr 1fr;gap:10px;max-width:480px;margin:14px auto 0}
+.ordb{position:relative;background:var(--card);border:2px solid var(--line);border-radius:14px;padding:16px 8px;font-size:26px;font-weight:700;font-variant-numeric:tabular-nums}
+.ordb.used{opacity:.4}
+.ordb .badge{position:absolute;top:-10px;left:-10px;width:30px;height:30px;border-radius:50%;background:var(--marker);color:var(--on-marker);font-size:17px;display:flex;align-items:center;justify-content:center}
+.slots{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin:10px 0 0;font-size:22px;font-weight:700;font-variant-numeric:tabular-nums;min-height:1.6em}
+.slots .lt{color:var(--soft)}
+.slots .ok{color:var(--ok)} .slots .bad{color:var(--bad)}
+.fb{text-align:center;min-height:1.6em;font-size:21px;font-weight:600;margin:12px 0 4px}
+.fb.ok{color:var(--ok)} .fb.bad{color:var(--bad)}
+.explain{max-width:560px;margin:6px auto 0;background:var(--card);border:2px solid var(--line);border-radius:14px;padding:10px 14px;font-size:17px}
+.explain:empty{display:none}
+.explain p{margin:4px 0}
+.explain .res{font-size:21px;font-weight:700;text-align:center;margin:8px 0 2px}
+.tipbtn{display:block;margin:6px auto 0;background:none;border:2px dashed var(--line);border-radius:12px;padding:6px 14px;font-size:15px;color:var(--soft)}
+.next{display:block;width:100%;max-width:420px;margin:14px auto 0;padding:15px;border:0;border-radius:16px;background:var(--ink);color:var(--paper);font-size:21px;font-weight:700}
+.pad{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;max-width:400px;margin:14px auto 0}
+.key{background:var(--key);border:2px solid var(--line);border-radius:14px;font-size:28px;font-weight:600;padding:11px 0;touch-action:manipulation}
+.key:active{background:var(--key-press)}
+.key.ok{grid-column:1 / -1;background:var(--ink);color:var(--paper);border-color:var(--ink);font-size:22px}
+
+/* Resultat */
+.score{font-size:clamp(48px,12vw,76px);font-weight:700;line-height:1;margin:30px 0 6px}
+.bigstars{font-size:44px;letter-spacing:4px;color:var(--line)}
+.bigstars .s{color:#E8B923}
+.msg{font-size:22px;margin:6px 0}
+.mistakes{background:var(--card);border:2px solid var(--line);border-radius:14px;padding:6px 18px;margin-top:22px}
+.mistakes h2{font-size:17px;color:var(--soft);margin:12px 0 4px}
+.mistakes ul{list-style:none;padding:0;margin:0}
+.mistakes li{padding:10px 0;border-bottom:1px solid var(--line);font-size:19px}
+.mistakes li:last-child{border-bottom:0}
+.actions{display:grid;gap:10px;margin-top:24px}
+.primary{width:100%;padding:16px;border:0;border-radius:16px;background:var(--ink);color:var(--paper);font-size:21px;font-weight:700}
+.second{width:100%;padding:14px;border-radius:16px;border:2px solid var(--ink);background:var(--card);font-size:19px;font-weight:600}
+</style>
+</head>
+<body>
+<main>
+
+<!-- ========== Start ========== -->
+<section id="setup">
+  <a class="home" href="/">Zur Startseite</a>
+  <h1>Masse umrechnen</h1>
+  <p class="intro">Meter, Zentimeter, Liter, Deziliter … Hier lernst du, wie man Einheiten umrechnet. Zuerst verstehen, dann üben – von leicht bis Profi.</p>
+
+  <div class="card merke">
+    <p class="big">Die wichtigste Regel</p>
+    <p><span class="dn">Grosse Einheit → kleine Einheit:</span> Die Zahl wird <b>grösser</b>. Komma nach <b>rechts</b>.<br><small style="color:var(--soft)">2 m = 200 cm</small></p>
+    <p><span class="upc">Kleine Einheit → grosse Einheit:</span> Die Zahl wird <b>kleiner</b>. Komma nach <b>links</b>.<br><small style="color:var(--soft)">4000 m = 4 km</small></p>
+    <p><span class="upc">Achtung bei der Zeit:</span> 1 h = 60 min, 1 min = 60 s, 1 d = 24 h. Hier rechnet man mit 60 und 24, nicht mit 10!</p>
+  </div>
+
+  <div class="filter" id="filter"><span>Ich übe:</span></div>
+  <div class="mods" id="mods"></div>
+</section>
+
+<!-- ========== Verstehen ========== -->
+<section id="learn" hidden>
+  <button class="ghost" id="learnBack">← Zurück</button>
+  <h1 style="margin-top:14px">Verstehen</h1>
+  <div class="chips" id="lsys"></div>
+
+  <h2>1. Die Einheiten-Treppe</h2>
+  <div class="card">
+    <svg class="treppe" id="treppe" viewBox="0 0 640 272" aria-label="Einheiten-Treppe"></svg>
+    <p style="margin:4px 0"><span class="dn">Treppe hinunter = mal</span> (die Zahl wird grösser).<br><span class="upc">Treppe hinauf = durch</span> (die Zahl wird kleiner).</p>
+    <p id="treppeHint" style="margin:4px 0;color:var(--soft);font-size:16px"></p>
+  </div>
+
+  <div id="zeitLearn" hidden>
+  <h2>2. Achtung: Die Zeit ist anders!</h2>
+  <div class="card">
+    <p style="margin:0">Bei der Zeit gibt es kein · 10, · 100, · 1000. Darum rutscht hier <b>kein Komma</b>. Du rechnest mit diesen Zahlen:</p>
+    <div class="zfacts"><div>1 d = 24 h</div><div>1 h = 60 min</div><div>1 min = 60 s</div></div>
+    <p style="margin:0;color:var(--soft);font-size:16px">d = Tag (lateinisch dies) · h = Stunde (hora) · min = Minute · s = Sekunde</p>
+  </div>
+  <h2>3. Die grosse Falle: Komma bei Stunden</h2>
+  <div class="card">
+    <p style="margin:0">Eine halbe Stunde sind 30 Minuten, nicht 50! Merke dir:</p>
+    <ul class="fallen">
+      <li>0.5 h = <b>30 min</b> &nbsp; <s>50 min</s></li>
+      <li>0.25 h = <b>15 min</b> (eine Viertelstunde)</li>
+      <li>0.75 h = <b>45 min</b> (eine Dreiviertelstunde)</li>
+      <li>1.5 h = <b>1 h 30 min</b> = 90 min &nbsp; <s>1 h 50 min</s></li>
+      <li>0.1 h = <b>6 min</b> (60 : 10)</li>
+    </ul>
+  </div>
+  <h2>4. Der Zeit-Rechner</h2>
+  <div class="card">
+    <p style="margin:0 0 4px">Gib eine Zeit ein und wähle die Einheit. Unten siehst du die gleiche Zeit in allen Einheiten.</p>
+    <div class="labin">
+      <input id="zVal" inputmode="decimal" value="1.5" aria-label="Zeit" autocomplete="off">
+      <div class="uchips" id="zFrom"></div>
+    </div>
+    <div class="alle" id="zAlle"></div>
+  </div>
+  </div>
+
+  <div id="decLearn">
+  <h2>2. Die Vorsilben verraten viel</h2>
+  <div class="card">
+    <div class="vors">
+      <div><b>Kilo- (k)</b>1000-mal<br>1 km = 1000 m</div>
+      <div><b>Hekto- (h)</b>100-mal<br>1 hl = 100 l</div>
+      <div><b>Dezi- (d)</b>ein Zehntel<br>10 dm = 1 m</div>
+      <div><b>Zenti- (c)</b>ein Hundertstel<br>100 cm = 1 m</div>
+      <div><b>Milli- (m)</b>ein Tausendstel<br>1000 ml = 1 l<br>1000 mg = 1 g</div>
+    </div>
+  </div>
+
+  <h2>3. Das Stellentafel-Labor</h2>
+  <div class="card">
+    <p style="margin:0 0 4px">Gib eine Zahl ein und wähle die Einheit. Tippe dann unten auf eine andere Einheit: Das <b style="color:var(--bad)">rote Komma</b> rutscht in der Tafel. Die Ziffern bleiben, wo sie sind!</p>
+    <div class="labin">
+      <input id="labVal" inputmode="decimal" value="4.6" aria-label="Zahl" autocomplete="off">
+      <div class="uchips" id="labFrom"></div>
+    </div>
+    <div class="tafelwrap" id="labTafel"></div>
+    <p class="tlegend"><i style="background:var(--fill);opacity:.55"></i>Komma vorher <i style="background:var(--bad)"></i>Komma nachher · graue 0 = aufgefüllte Null</p>
+    <div class="alle" id="labAlle"></div>
+  </div>
+  </div>
+  <button class="primary" id="learnGo" style="margin-top:8px">Jetzt üben: Stufe 1</button>
+</section>
+
+<!-- ========== Üben ========== -->
+<section id="play" hidden>
+  <div class="bar">
+    <button class="ghost" id="stop">Beenden</button>
+    <span class="status" id="status"></span>
+  </div>
+  <div class="progress"><span id="prog"></span></div>
+  <div class="lvl" id="lvl"></div>
+  <div id="stage"></div>
+  <button class="tipbtn" id="tip" hidden>Tipp anzeigen</button>
+  <div class="fb" id="fb" aria-live="polite"></div>
+  <div class="explain" id="explain"></div>
+  <button class="next" id="next" hidden>Weiter</button>
+  <div class="pad" id="pad" hidden>
+    <button class="key" data-k="7">7</button><button class="key" data-k="8">8</button><button class="key" data-k="9">9</button>
+    <button class="key" data-k="4">4</button><button class="key" data-k="5">5</button><button class="key" data-k="6">6</button>
+    <button class="key" data-k="1">1</button><button class="key" data-k="2">2</button><button class="key" data-k="3">3</button>
+    <button class="key" data-k=".">.</button><button class="key" data-k="0">0</button><button class="key" data-k="del" aria-label="Löschen">⌫</button>
+    <button class="key ok" data-k="ok">Prüfen</button>
+  </div>
+</section>
+
+<!-- ========== Resultat ========== -->
+<section id="result" hidden>
+  <div class="score" id="score"></div>
+  <div class="bigstars" id="bigstars"></div>
+  <p class="msg" id="msg"></p>
+  <div class="mistakes" id="mist" hidden>
+    <h2>Das hat beim ersten Mal nicht geklappt</h2>
+    <ul id="mlist"></ul>
+  </div>
+  <div class="actions">
+    <button class="primary" id="nextLvl">Nächste Stufe</button>
+    <button class="second" id="again">Nochmals üben</button>
+    <button class="second" id="back">Zur Übersicht</button>
+  </div>
+</section>
+
+</main>
+<script>
+(function(){
+"use strict";
+const $ = id => document.getElementById(id);
+const ri = (a,b) => a + Math.floor(Math.random()*(b-a+1));
+const pick = a => a[ri(0,a.length-1)];
+const shuffle = a => { a=a.slice(); for(let i=a.length-1;i>0;i--){const j=ri(0,i);[a[i],a[j]]=[a[j],a[i]];} return a; };
+const P10 = k => Math.pow(10,k);
+
+/* ---------- Einheiten ---------- */
+const SYS = {
+  L:{name:'Längen',  cols:[['km',6],['',5],['',4],['m',3],['dm',2],['cm',1],['mm',0]]},
+  H:{name:'Hohlmasse',cols:[['hl',5],['',4],['l',3],['dl',2],['cl',1],['ml',0]]},
+  G:{name:'Gewichte',cols:[['t',9],['',8],['',7],['kg',6],['',5],['',4],['g',3],['',2],['',1],['mg',0]]},
+  Z:{name:'Zeit',cols:[]}
+};
+const UE = {}; // Einheit -> [System, Exponent]
+for(const s in SYS) SYS[s].cols.forEach(([u,e])=>{ if(u) UE[u]=[s,e]; });
+const E = u => UE[u][1];
+const units = (s,all) => SYS[s].cols.filter(c=>c[0] && (all || c[0]!=='mg')).map(c=>c[0]); // mg nur bei Profi
+const LOW = {L:0, H:0, G:3}; // kleinste Einheit ohne Profi (bei Gewichten: g)
+const PROFI = {L:[], H:[], G:[['g','mg'],['kg','mg']]};
+const PAIRS = {
+  L:[['km','m'],['m','dm'],['dm','cm'],['cm','mm'],['m','cm'],['m','mm']],
+  H:[['hl','l'],['l','dl'],['dl','cl'],['cl','ml'],['l','cl'],['l','ml']],
+  G:[['t','kg'],['kg','g']]
+};
+const JUMPS = { // grosse Sprünge
+  L:[['km','cm'],['km','dm'],['km','mm'],['m','mm'],['km','m'],['dm','mm']],
+  H:[['hl','dl'],['hl','cl'],['hl','ml'],['l','ml'],['hl','l'],['dl','ml']],
+  G:[['t','g'],['t','kg'],['kg','g']]
+};
+
+/* ---------- Dezimalzahlen als Text (keine Rundungsfehler) ---------- */
+function norm(s){
+  s = String(s).trim().replace(/[\s'’]/g,'').replace(',', '.');
+  if(s===''||s==='.'||!/^\d*\.?\d*$/.test(s)) return null;
+  let [i,f=''] = s.split('.');
+  i = i.replace(/^0+/,'') || '0'; f = f.replace(/0+$/,'');
+  return f ? i+'.'+f : i;
+}
+function shift(s,k){ // Komma um k Stellen nach rechts (k<0: links)
+  s = norm(s); let [i,f=''] = s.split('.');
+  let d = i+f, p = i.length+k;
+  if(p<=0){ d = '0'.repeat(1-p)+d; p = 1; }
+  if(p>d.length) d = d+'0'.repeat(p-d.length);
+  return norm(d.slice(0,p)+'.'+d.slice(p));
+}
+const conv = (v,from,to) => shift(v, E(from)-E(to));
+const inU = (B,u) => shift(String(B), -E(u)); // Basiswert -> Einheit
+function nice(s){
+  s = norm(s); let [i,f] = s.split('.');
+  if(i.length>=5) i = i.replace(/\B(?=(\d{3})+(?!\d))/g,"'");
+  return f ? i+'.'+f : i;
+}
+const dec = s => (norm(s).split('.')[1]||'').length;
+const ilen = s => norm(s).split('.')[0].replace(/^0$/,'').length;
+const okRep = (s,maxDec,maxInt) => dec(s)<=maxDec && ilen(s)<=maxInt;
+
+/* ---------- Stellentafel ---------- */
+function tafel(val, from, to){
+  const s = UE[from][0]; to = to||from;
+  const [i,f=''] = norm(val).split('.');
+  const eF = E(from), eT = E(to), dig = {};
+  if(i!=='0') for(let j=0;j<i.length;j++) dig[eF+j] = i[i.length-1-j];
+  for(let m=1;m<=f.length;m++) dig[eF-m] = f[m-1];
+  const ex = Object.keys(dig).map(Number);
+  const hi = ex.length?Math.max(...ex):eT, lo = ex.length?Math.min(...ex):eT;
+  const fHi = Math.max(hi,eT), fLo = Math.min(lo,eT);
+  const sMax = SYS[s].cols[0][1];
+  const cHi = Math.max(sMax,fHi), cLo = Math.min(LOW[s],fLo);
+  const name = {}; SYS[s].cols.forEach(([u,e])=>{ if(u) name[e]=u; });
+  let h='<tr>', b='<tr>';
+  for(let e=cHi;e>=cLo;e--){
+    const cls = e===eT?' class="to"':(e===eF?' class="from"':'');
+    h += `<th${cls}>${name[e]||''}</th>`;
+    let c = [], t = '';
+    if(dig[e]!==undefined) t = dig[e];
+    else if(e<=fHi && e>=fLo){ t='0'; c.push('f'); }
+    if(e===eT) c.push('cT');
+    if(e===eF && from!==to) c.push('cF');
+    b += `<td${c.length?` class="${c.join(' ')}"`:''}>${t}</td>`;
+  }
+  return `<div class="tafelwrap"><table class="tafel">${h}</tr>${b}</tr></table></div>`;
+}
+const stellen = k => k===1?'1 Stelle':k+' Stellen';
+function convText(from,to){
+  const k = E(from)-E(to), f = nice(String(P10(Math.abs(k))));
+  if(k>0) return `<b>${from} → ${to}:</b> ${to} ist die <span class="dn">kleinere</span> Einheit. Die Zahl wird grösser: <b>· ${f}</b>. Das Komma rutscht <b>${stellen(k)} nach rechts</b>.`;
+  return `<b>${from} → ${to}:</b> ${to} ist die <span class="upc">grössere</span> Einheit. Die Zahl wird kleiner: <b>: ${f}</b>. Das Komma rutscht <b>${stellen(-k)} nach links</b>.`;
+}
+function convExplain(v,from,to){
+  return `<p>${convText(from,to)}</p>${tafel(v,from,to)}<p class="res">${nice(v)} ${from} = ${nice(conv(v,from,to))} ${to}</p>`;
+}
+
+/* ---------- Einstellungen / Fortschritt ---------- */
+const KEY = 'lernorte_masse_umrechnen_v1';
+let store = {act:['L','H','G','Z'], best:{}, gNeu:true, zNeu:true};
+try{ const x = JSON.parse(localStorage.getItem(KEY)); if(x&&x.act&&x.act.length) store = Object.assign(store,x); }catch(e){}
+if(!store.gNeu){ if(!store.act.includes('G')) store.act.push('G'); store.gNeu = true; }
+if(!store.zNeu){ if(!store.act.includes('Z')) store.act.push('Z'); store.zNeu = true; }
+const save = () => { try{ localStorage.setItem(KEY, JSON.stringify(store)); }catch(e){} };
+const pickSys = () => pick(store.act.filter(x=>x!=='Z')); // Zeit hat eigene Generatoren
+
+/* ---------- Aufgaben-Generatoren ---------- */
+// Aufgabe: {kind:'num', q, parts:[text | {ans,unit,exp}], label}
+//          {kind:'mc', q, line, opts, ans, exp, label}
+//          {kind:'order', q, items:[{t,B}], exp, label}
+const NAMES = ['Mia','Nino','Ladina','Gian','Seraina','Curdin','Lea','Andri','Flurina','Luca'];
+
+// Stufe 1 – Einheiten kennen
+const SCHAETZ = [
+  ['L','Ein Bleistift ist etwa 17 ___ lang.','cm'],
+  ['L','Ein Fussballfeld ist etwa 100 ___ lang.','m'],
+  ['L','Von Zernez nach St. Moritz sind es etwa 40 ___.','km'],
+  ['L','Eine Ameise ist etwa 5 ___ lang.','mm'],
+  ['L','Ein Smartphone ist etwa 8 ___ dick.','mm'],
+  ['L','Eine Zimmertür ist etwa 2 ___ hoch.','m'],
+  ['L','Dein Schulheft ist etwa 3 ___ breit.','dm'],
+  ['H','Eine Badewanne fasst etwa 150 ___.','l'],
+  ['H','Ein Löffel Hustensirup sind etwa 5 ___.','ml'],
+  ['H','Ein Glas Wasser sind etwa 2 ___.','dl'],
+  ['H','Eine Getränkedose enthält 33 ___.','cl'],
+  ['H','Ein Tanklastwagen fasst etwa 300 ___.','hl'],
+  ['G','Ein Apfel wiegt etwa 150 ___.','g'],
+  ['G','Ein Schulsack wiegt etwa 5 ___.','kg'],
+  ['G','Ein Auto wiegt etwa 1.5 ___.','t'],
+  ['G','Ein Steinbock wiegt etwa 100 ___.','kg'],
+  ['G','Ein Blatt Papier wiegt etwa 5 ___.','g']
+];
+function g1(){
+  const s = pickSys(), t = ri(0,2);
+  if(t===0){ // Umrechnungszahl
+    const [a,b] = pick(PAIRS[s]), f = P10(E(a)-E(b));
+    const opts = shuffle([...new Set([f, ...shuffle([10,100,1000,10000].filter(x=>x!==f)).slice(0,2)])]).map(String);
+    return {kind:'mc', type:'Umrechnungszahl', q:'Wie viele sind es?', line:`1 ${a} = ? ${b}`, opts:opts.map(o=>nice(o)+' '+b), ans:opts.indexOf(String(f)),
+      exp:`<p>Von <b>${a}</b> nach <b>${b}</b> rutscht das Komma ${stellen(E(a)-E(b))} nach rechts.</p>${tafel('1',a,b)}<p class="res">1 ${a} = ${nice(String(f))} ${b}</p>`, label:`1 ${a} = ${nice(String(f))} ${b}`};
+  }
+  if(t===1){ // grösser oder kleiner?
+    const [a,b] = pick(PAIRS[s]), down = Math.random()<.5, n = String(ri(2,9));
+    const from = down?a:b, to = down?b:a;
+    return {kind:'mc', type:'Grösser oder kleiner?', q:`Du rechnest ${n} ${from} in ${to} um. Die Zahl wird …`, line:'', opts:['grösser','kleiner'], ans:down?0:1,
+      exp:`<p>${convText(from,to)}</p><p class="res">${n} ${from} = ${nice(conv(n,from,to))} ${to}</p>`, label:`${n} ${from} → ${to}: Zahl wird ${down?'grösser':'kleiner'}`};
+  }
+  const it = pick(SCHAETZ.filter(x=>store.act.includes(x[0])));
+  const us = units(it[0]), others = shuffle(us.filter(u=>u!==it[2])).slice(0,3);
+  const opts = shuffle([it[2], ...others]);
+  return {kind:'mc', type:'Schätzen', q:'Welche Einheit passt?', line:'', sent:it[1], opts, ans:opts.indexOf(it[2]),
+    exp:`<p>${it[1].replace('___','<b>'+it[2]+'</b>')}</p>`, label:it[1].replace('___',it[2])};
+}
+
+// Stufe 2 – ganze Zahlen
+function g2(){
+  const s = pickSys(), [a,b] = pick(PAIRS[s]), down = Math.random()<.5;
+  const n = Math.random()<.55 ? ri(2,9) : ri(11,99);
+  const B = n*P10(E(a)), from = down?a:b, to = down?b:a;
+  return numTask(inU(B,from), from, to);
+}
+function numTask(v, from, to, q){
+  const ans = conv(v,from,to);
+  return {kind:'num', type:'Umrechnen', q:q||`Rechne um: von <b>${from}</b> in <b>${to}</b>.`, parts:[nice(v)+' ', unitSpan(from), ' = ', {ans, unit:to, from, v}, unitSpan(to)], label:`${nice(v)} ${from} = ${nice(ans)} ${to}`,
+    tip:()=>`<p>${convText(from,to)}</p>${tafel(v,from,from)}`};
+}
+const unitSpan = u => `<span class="unit">${u}</span>`;
+
+// Stufe 3 – mit Komma
+function g3(){
+  const s = pickSys(), [a,b] = pick(PAIRS[s]), k = E(a)-E(b), f = P10(k);
+  let m;
+  do{
+    if(k===1) m = ri(11,199);
+    else if(k===2) m = Math.random()<.4 ? ri(15,99) : ri(101,999);
+    else m = Math.random()<.4 ? ri(150,999) : ri(1001,9999);
+  } while(m%f===0 || m%10===0 && Math.random()<.6);
+  const B = m*P10(E(b)), down = Math.random()<.5;
+  const from = down?a:b, to = down?b:a;
+  return numTask(inU(B,from), from, to);
+}
+
+// Stufe 4 – grosse Sprünge und Ketten
+function randVal(us, maxGivenDec){
+  const lowE = us.includes('mg') ? 0 : LOW[UE[us[0]][0]];
+  for(let tries=0;tries<400;tries++){
+    const sig = pick([ri(2,9), ri(11,99), ri(101,999)]);
+    if(sig%10===0) continue;
+    const B = sig*P10(ri(lowE, lowE+7));
+    if(!okRep(inU(B,us[0]), maxGivenDec, 5)) continue;
+    if(us.slice(1).every(u=>okRep(inU(B,u),4,7))) return B;
+  }
+  return null;
+}
+function g4(){
+  const s = pickSys();
+  if(Math.random()<.5){ // Kette wie im Buch: 25.3 m = __ km = __ cm
+    const us = shuffle(units(s)).slice(0,3);
+    const B = randVal(us,2); if(B===null) return g4();
+    const v = inU(B,us[0]), a1 = inU(B,us[1]), a2 = inU(B,us[2]);
+    return {kind:'num', type:'Kette – zwei Lücken', q:'Fülle beide Lücken aus.', parts:[nice(v)+' ', unitSpan(us[0]), ' = ', {ans:a1,unit:us[1],from:us[0],v}, unitSpan(us[1]), ' = ', {ans:a2,unit:us[2],from:us[0],v}, unitSpan(us[2])],
+      label:`${nice(v)} ${us[0]} = ${nice(a1)} ${us[1]} = ${nice(a2)} ${us[2]}`,
+      tip:()=>`<p>Rechne beide Lücken von <b>${us[0]}</b> aus.</p>${tafel(v,us[0],us[0])}`};
+  }
+  let [a,b] = pick(JUMPS[s]); if(Math.random()<.5) [a,b]=[b,a];
+  const B = randVal([a,b],3); if(B===null) return g4();
+  return numTask(inU(B,a), a, b);
+}
+
+// Stufe 5 – Profi
+const MIXP = {L:[['m','cm'],['km','m'],['m','mm'],['cm','mm']], H:[['l','dl'],['l','cl'],['hl','l']], G:[['kg','g'],['t','kg'],['g','mg']]};
+function gMixed(){ // 3 m 7 cm = __ cm
+  const s = pickSys(), [a,b] = pick(MIXP[s]), f = P10(E(a)-E(b));
+  const x = ri(1, a==='km'||a==='hl'?25:9);
+  const y = Math.random()<.45 ? ri(1, Math.max(1,f/10-1)) : ri(1,f-1);
+  const B = x*P10(E(a)) + y*P10(E(b)), to = Math.random()<.5?b:a;
+  const ans = inU(B,to), xb = conv(String(x),a,b), tot = inU(B,b);
+  let exp = `<p>${x} ${a} = ${nice(xb)} ${b}</p><p>${nice(xb)} ${b} + ${y} ${b} = <b>${nice(tot)} ${b}</b></p>`;
+  if(to===a) exp += `<p>${convText(b,a)}</p>${tafel(tot,b,a)}`;
+  exp += `<p class="res">${x} ${a} ${y} ${b} = ${nice(ans)} ${to}</p>`;
+  return {kind:'num', type:'Gemischte Angabe', q:'Schreibe mit einer einzigen Einheit.', parts:[`${x} `,unitSpan(a),` ${y} `,unitSpan(b),' = ',{ans,unit:to,exp},unitSpan(to)],
+    label:`${x} ${a} ${y} ${b} = ${nice(ans)} ${to}`, tip:()=>`<p>Rechne zuerst <b>${x} ${a}</b> in <b>${b}</b> um. Zähle dann ${y} ${b} dazu.</p>`};
+}
+function gSum(){ // 1.2 m + 35 cm = __ cm
+  const s = pickSys(), [a,b] = pick(MIXP[s]);
+  const B1 = ri(11,49)*P10(E(a)-1), B2 = ri(11,95)*P10(E(b));
+  const plus = Math.random()<.6 || B2>=B1;
+  const B = plus ? B1+B2 : B1-B2, to = Math.random()<.5?b:a;
+  const v1 = inU(B1,a), v2 = inU(B2,b), o = plus?'+':'−';
+  const c1 = inU(B1,to), c2 = inU(B2,to), ans = inU(B,to);
+  const exp = `<p>Zuerst alles in <b>${to}</b> umrechnen:</p><p>${a===to?'':nice(v1)+' '+a+' = '+nice(c1)+' '+to}${b===to?'':nice(v2)+' '+b+' = '+nice(c2)+' '+to}</p><p class="res">${nice(c1)} ${o} ${nice(c2)} = ${nice(ans)} ${to}</p>`;
+  return {kind:'num', type:'Rechnen mit Einheiten', q:'Rechne aus.', parts:[nice(v1)+' ',unitSpan(a),` <span class="op">${o}</span> ${nice(v2)} `,unitSpan(b),' = ',{ans,unit:to,exp},unitSpan(to)],
+    label:`${nice(v1)} ${a} ${o} ${nice(v2)} ${b} = ${nice(ans)} ${to}`, tip:()=>'<p>Du kannst nur gleiche Einheiten zusammenzählen. Rechne zuerst beide Angaben in <b>'+to+'</b> um.</p>'};
+}
+function gOrder(){
+  const s = pickSys();
+  let d; do{ d = ri(12,98); } while(d%10===0 || Math.floor(d/10)===d%10);
+  const rev = (d%10)*10+Math.floor(d/10);
+  const e = s==='H' ? ri(1,3) : s==='G' ? ri(1,7) : ri(1,4);
+  const Bs = [d*P10(e), d*P10(e+1), rev*P10(e), d*P10(e-1)];
+  const used = [];
+  const items = shuffle(Bs).map(B=>{
+    let us = shuffle(units(s,true)).filter(u=>okRep(inU(B,u),3,5));
+    us.sort((x,y)=>used.includes(x)-used.includes(y));
+    const u = us[0]; used.push(u);
+    return {t:nice(inU(B,u))+' '+u, B, u};
+  });
+  const sm = units(s,true).filter(u=>items.every(it=>dec(inU(it.B,u))===0))[0];
+  const sorted = items.slice().sort((x,y)=>x.B-y.B);
+  const exp = `<p>Alles in <b>${sm}</b> umrechnen, dann vergleichen:</p><p>${sorted.map(it=>`${it.t} = <b>${nice(inU(it.B,sm))} ${sm}</b>`).join('<br>')}</p>`;
+  return {kind:'order', type:'Ordnen', q:'Tippe die Angaben der Reihe nach an: <b>vom kleinsten zum grössten</b>.', items, exp, label:sorted.map(i=>i.t).join(' < ')};
+}
+function gError(){
+  const s = pickSys(), [a,b] = pick(PAIRS[s].concat(JUMPS[s], PROFI[s], PROFI[s]));
+  const B = randVal([a,b],2); if(B===null) return gError();
+  let from=a,to=b; if(Math.random()<.5){from=b;to=a;}
+  const v = inU(B,from), right = inU(B,to);
+  const correct = Math.random()<.4;
+  let claim = right;
+  if(!correct){ const w = Math.random()<.5 ? shift(right, pick([1,-1])) : shift(v, -(E(from)-E(to))); claim = w===right?shift(right,1):w; }
+  const who = pick(NAMES);
+  return {kind:'mc', type:'Fehler finden', q:`${who} rechnet:`, line:`${nice(v)} ${from} = ${nice(claim)} ${to}`, sent:'Stimmt das?', opts:['Stimmt','Stimmt nicht'], ans:correct?0:1,
+    exp:(correct?'':`<p>${who} hat sich vertan. Richtig ist:</p>`)+convExplain(v,from,to), label:`${nice(v)} ${from} = ${nice(right)} ${to}`};
+}
+const TEXT = [
+  ['H', ()=>{ const a=pick([100,150,200]), g=pick([20,25,30,50]); const n=Math.floor(a/g), r=a-n*g;
+    return {q:`Eine Flasche enthält ${nice(shift(a,-2))} l Wasser. Du füllst Gläser mit je ${nice(shift(g,-1))} dl. Wie viele Gläser kannst du ganz füllen?`, ans:String(n), unit:'Gläser',
+      exp:`<p>${nice(shift(a,-2))} l = ${nice(shift(a,-1))} dl</p><p>${nice(shift(a,-1))} dl : ${nice(shift(g,-1))} dl = ${n}${r?' Rest '+nice(shift(r,-1))+' dl':''}</p><p class="res">${n} Gläser</p>`}; }],
+  ['L', ()=>{ const w=ri(7,25)*50, tot=w*10;
+    return {q:`Dein Schulweg ist ${w} m lang. Du gehst ihn jeden Tag hin und zurück. Wie viele km sind das in 5 Tagen?`, ans:shift(tot,-3), unit:'km',
+      exp:`<p>Pro Tag: ${w} m · 2 = ${w*2} m</p><p>5 Tage: ${w*2} m · 5 = ${nice(String(tot))} m</p><p class="res">${nice(String(tot))} m = ${nice(shift(tot,-3))} km</p>`}; }],
+  ['L', ()=>{ const k=ri(54,128), m=k*100, d=ri(12,48)*100;
+    return {q:`Eine Wanderung im Nationalpark ist ${nice(shift(k,-1))} km lang. Ihr habt schon ${nice(String(d))} m geschafft. Wie viele m fehlen noch?`, ans:String(m-d), unit:'m',
+      exp:`<p>${nice(shift(k,-1))} km = ${nice(String(m))} m</p><p class="res">${nice(String(m))} m − ${nice(String(d))} m = ${nice(String(m-d))} m</p>`}; }],
+  ['L', ()=>{ const b=ri(12,30)*10, st=pick([15,20,25,30,40]), n=Math.floor(b/st), r=b-n*st;
+    return {q:`Ein Brett ist ${nice(shift(b,-2))} m lang. Du sägst Stücke von ${st} cm ab. Wie viele ganze Stücke gibt es?`, ans:String(n), unit:'Stücke',
+      exp:`<p>${nice(shift(b,-2))} m = ${b} cm</p><p>${b} cm : ${st} cm = ${n}${r?' Rest '+r+' cm':''}</p><p class="res">${n} Stücke</p>`}; }],
+  ['H', ()=>{ const n=ri(4,12), c=pick([50,70,75]);
+    return {q:`Für ein Klassenfest kauft ihr ${n} Flaschen Sirup zu je ${c} cl. Wie viele Liter Sirup sind das?`, ans:shift(n*c,-2), unit:'l',
+      exp:`<p>${n} · ${c} cl = ${n*c} cl</p><p class="res">${n*c} cl = ${nice(shift(n*c,-2))} l</p>`}; }],
+  ['H', ()=>{ const l=ri(18,30);
+    return {q:`Eine Kuh gibt pro Tag etwa ${l} l Milch. Wie viele hl sind das in einer Woche?`, ans:shift(l*7,-2), unit:'hl',
+      exp:`<p>${l} l · 7 = ${l*7} l</p><p class="res">${l*7} l = ${nice(shift(l*7,-2))} hl</p>`}; }],
+  ['G', ()=>{ const t=pick([3,5,8,12]), k=pick([40,50,80,125,250]), n=Math.floor(t*1000/k);
+    return {q:`Ein Lieferwagen darf ${t} t laden. Eine Kiste wiegt ${k} kg. Wie viele Kisten darf er höchstens laden?`, ans:String(n), unit:'Kisten',
+      exp:`<p>${t} t = ${nice(String(t*1000))} kg</p><p class="res">${nice(String(t*1000))} kg : ${k} kg = ${n}${t*1000%k?' (Rest '+t*1000%k+' kg)':''}</p>`}; }],
+  ['G', ()=>{ const a=pick([2,3,4,5]), n=pick([200,250,400,500,800]);
+    return {q:`Eine Ameise wiegt etwa ${a} mg. Wie viele Gramm wiegen ${n} Ameisen?`, ans:shift(a*n,-3), unit:'g',
+      exp:`<p>${n} · ${a} mg = ${nice(String(a*n))} mg</p><p class="res">${nice(String(a*n))} mg = ${nice(shift(a*n,-3))} g</p>`}; }],
+  ['G', ()=>{ const m=pick([5,8,10,12,15]), n=pick([100,200,250,500]);
+    return {q:`Ein Bienenvolk sammelt Pollen. Eine Biene bringt pro Flug etwa ${m} mg Pollen nach Hause. Wie viele Gramm sind ${n} Flüge?`, ans:shift(m*n,-3), unit:'g',
+      exp:`<p>${n} · ${m} mg = ${nice(String(m*n))} mg</p><p class="res">${nice(String(m*n))} mg = ${nice(shift(m*n,-3))} g</p>`}; }],
+  ['G', ()=>{ const g=pick([120,150,180,200]), n=ri(6,15);
+    return {q:`Ein Apfel wiegt etwa ${g} g. Wie viele kg wiegen ${n} Äpfel?`, ans:shift(g*n,-3), unit:'kg',
+      exp:`<p>${n} · ${g} g = ${nice(String(g*n))} g</p><p class="res">${nice(String(g*n))} g = ${nice(shift(g*n,-3))} kg</p>`}; }]
+];
+function gText(){
+  const t = pick(TEXT.filter(x=>store.act.includes(x[0])))[1]();
+  return {kind:'num', type:'Textaufgabe', q:t.q, text:true, parts:[{ans:t.ans,unit:t.unit,exp:t.exp},unitSpan(t.unit)], label:t.q+' → '+nice(t.ans)+' '+t.unit,
+    tip:()=>'<p>Rechne zuerst alles in die <b>gleiche Einheit</b> um. Dann rechnest du weiter.</p>'};
+}
+function g5(){ return pick([gMixed,gMixed,gSum,gSum,gOrder,gOrder,gError,gText,gText])(); }
+
+/* ---------- Zeit (d, h, min, s) – nicht dezimal! ---------- */
+const TF = {d:86400, h:3600, min:60, s:1}, TU = ['d','h','min','s'];
+const ZP = [['d','h'],['h','min'],['min','s']];
+const ZFACTS = '1 d = 24 h · 1 h = 60 min · 1 min = 60 s';
+function ratDec(num, den, maxDec){ // num/den als Dezimalzahl (Text) oder null
+  for(let k=0;k<=(maxDec===undefined?4:maxDec);k++){ const n = num*P10(k); if(n%den===0) return shift(String(n/den),-k); }
+  return null;
+}
+const tU = (B,u) => ratDec(B, TF[u]);
+const tFac = (a,b) => TF[a]/TF[b];
+function hm(B){ // 8100 s -> "2 h 15 min"
+  const h = Math.floor(B/3600), m = Math.round((B%3600)/60);
+  return h&&m ? `${h} h ${m} min` : h ? `${h} h` : `${m} min`;
+}
+function zDir(from,to){
+  const down = TF[to]<TF[from];
+  return down ? `<b>${from} → ${to}:</b> ${to} ist die <span class="dn">kleinere</span> Einheit. Die Zahl wird grösser: <b>mal</b> rechnen.`
+              : `<b>${from} → ${to}:</b> ${to} ist die <span class="upc">grössere</span> Einheit. Die Zahl wird kleiner: <b>durch</b> rechnen.`;
+}
+function zChain(B,from,to){
+  const i = TU.indexOf(from), j = TU.indexOf(to), st = i<j?1:-1;
+  let h = `${nice(tU(B,from))} ${from}`;
+  for(let k=i;k!==j;k+=st){
+    const a = TU[k], b = TU[k+st];
+    h += ` <span class="${st>0?'dn':'upc'}">${st>0?'· '+tFac(a,b):': '+tFac(b,a)} →</span> ${nice(tU(B,b))} ${b}`;
+  }
+  return h;
+}
+function zExplain(B,from,to){
+  return `<p>${zDir(from,to)}</p><p style="color:var(--soft)">${ZFACTS}</p><p class="zchain">${zChain(B,from,to)}</p><p class="res">${nice(tU(B,from))} ${from} = ${nice(tU(B,to))} ${to}</p>`;
+}
+function zConv(B,from,to){
+  const v = tU(B,from), ans = tU(B,to);
+  return {kind:'num', type:'Zeit umrechnen', q:`Rechne um: von <b>${from}</b> in <b>${to}</b>.`,
+    parts:[nice(v)+' ',unitSpan(from),' = ',{ans,unit:to,exp:zExplain(B,from,to)},unitSpan(to)],
+    label:`${nice(v)} ${from} = ${nice(ans)} ${to}`, tip:()=>`<p>${zDir(from,to)}</p><p><b>${ZFACTS}</b></p>`};
+}
+const hdec = (w,fr) => nice(shift(String(w*100+fr),-2)); // 1, 50 -> "1.5"
+const SCHAETZ_Z = [
+  ['Zähneputzen dauert etwa 3 ___.','min'], ['Ein Fussballspiel dauert 90 ___.','min'],
+  ['Die Sommerferien dauern etwa 35 ___.','d'], ['Ein Schultag dauert etwa 7 ___.','h'],
+  ['Für 100 m rennst du etwa 15 ___.','s'], ['In der Nacht schläfst du etwa 9 ___.','h'],
+  ['Ein Wochenende hat 2 ___.','d'], ['Einmal blinzeln dauert weniger als 1 ___.','s'],
+  ['Eine Schullektion dauert 45 ___.','min'], ['Ein Lied dauert etwa 200 ___.','s']
+];
+function z1(){
+  const t = ri(0,2);
+  if(t===0){
+    const [a,b] = pick([['d','h'],['h','min'],['min','s'],['h','s'],['h','min']]), f = tFac(a,b);
+    const opts = shuffle([f, ...shuffle([10,24,60,100,1000,3600].filter(x=>x!==f)).slice(0,2)]);
+    return {kind:'mc', type:'Umrechnungszahl', q:'Wie viele sind es?', line:`1 ${a} = ? ${b}`, opts:opts.map(o=>nice(String(o))+' '+b), ans:opts.indexOf(f),
+      exp:`<p><b>${ZFACTS}</b></p>${a==='h'&&b==='s'?'<p class="zchain">1 h = 60 min = 60 · 60 s = 3600 s</p>':''}<p class="res">1 ${a} = ${nice(String(f))} ${b}</p>`, label:`1 ${a} = ${nice(String(f))} ${b}`};
+  }
+  if(t===1){
+    const [a,b] = pick(ZP), down = Math.random()<.5, n = ri(2,9), from = down?a:b, to = down?b:a;
+    const B = down ? n*TF[a] : n*TF[a];
+    return {kind:'mc', type:'Grösser oder kleiner?', q:`Du rechnest ${nice(tU(B,from))} ${from} in ${to} um. Die Zahl wird …`, line:'', opts:['grösser','kleiner'], ans:down?0:1,
+      exp:`<p>${zDir(from,to)}</p><p class="zchain">${zChain(B,from,to)}</p>`, label:`${nice(tU(B,from))} ${from} → ${to}: Zahl wird ${down?'grösser':'kleiner'}`};
+  }
+  const it = pick(SCHAETZ_Z), opts = TU.slice();
+  return {kind:'mc', type:'Schätzen', q:'Welche Einheit passt?', line:'', sent:it[0], opts, ans:opts.indexOf(it[1]),
+    exp:`<p>${it[0].replace('___','<b>'+it[1]+'</b>')}</p>`, label:it[0].replace('___',it[1])};
+}
+function z2(){
+  const [a,b] = pick(ZP), down = Math.random()<.5;
+  const n = a==='d' ? ri(2,7) : (Math.random()<.5 ? ri(2,9) : ri(10,30));
+  return down ? zConv(n*TF[a],a,b) : zConv(n*TF[a],b,a);
+}
+function z3(){
+  const [a,b] = pick(ZP), fr = pick(a==='d'?[25,50,75]:[25,50,75,50,10,20]), w = ri(0,4);
+  const B = (w*100+fr)*TF[a]/100;
+  return Math.random()<.5 ? zConv(B,a,b) : zConv(B,b,a);
+}
+function z4(){
+  if(Math.random()<.5){
+    const tri = pick([['d','h','min'],['h','min','s']]), ord = Math.random()<.5 ? tri : tri.slice().reverse();
+    const B = (ri(1,5)*100 + pick([0,0,50,25]))*TF[tri[0]]/100, v = tU(B,ord[0]);
+    const bl = u => ({ans:tU(B,u), unit:u, exp:zExplain(B,ord[0],u)});
+    return {kind:'num', type:'Zeit – Kette mit zwei Lücken', q:'Fülle beide Lücken aus.',
+      parts:[nice(v)+' ',unitSpan(ord[0]),' = ',bl(ord[1]),unitSpan(ord[1]),' = ',bl(ord[2]),unitSpan(ord[2])],
+      label:`${nice(v)} ${ord[0]} = ${nice(tU(B,ord[1]))} ${ord[1]} = ${nice(tU(B,ord[2]))} ${ord[2]}`,
+      tip:()=>`<p>Gehe Schritt für Schritt über die Zeit-Treppe.</p><p><b>${ZFACTS}</b></p>`};
+  }
+  const [a,b] = pick([['d','min'],['h','s'],['d','s']]), B = (ri(1,4)*100 + pick([0,0,50,25]))*TF[a]/100;
+  return Math.random()<.5 ? zConv(B,a,b) : zConv(B,b,a);
+}
+function zMixed(){
+  const [a,b] = pick(ZP), f = tFac(a,b), x = a==='d'?ri(1,6):ri(1,5), y = ri(1,f-1);
+  const B = x*TF[a]+y*TF[b], tot = x*f+y;
+  if(Math.random()<.5){
+    const exp = `<p>${x} ${a} = ${x} · ${f} = ${x*f} ${b}</p><p class="res">${x*f} ${b} + ${y} ${b} = ${tot} ${b}</p>`;
+    return {kind:'num', type:'Gemischte Angabe', q:'Schreibe mit einer einzigen Einheit.', parts:[`${x} `,unitSpan(a),` ${y} `,unitSpan(b),' = ',{ans:String(tot),unit:b,exp},unitSpan(b)],
+      label:`${x} ${a} ${y} ${b} = ${tot} ${b}`, tip:()=>`<p>Rechne zuerst <b>${x} ${a}</b> in <b>${b}</b> um (1 ${a} = ${f} ${b}). Zähle dann ${y} ${b} dazu.</p>`};
+  }
+  const exp = `<p>1 ${a} = ${f} ${b}. Wie oft passt ${f} in ${tot}?</p><p class="res">${tot} : ${f} = ${x} Rest ${y} → ${x} ${a} ${y} ${b}</p>`;
+  return {kind:'num', type:'Gemischte Angabe', q:`Zerlege in ${a==='d'?'Tage':a==='h'?'Stunden':'Minuten'} und ${b==='h'?'Stunden':b==='min'?'Minuten':'Sekunden'}.`,
+    parts:[`${tot} `,unitSpan(b),' = ',{ans:String(x),unit:a,exp},unitSpan(a),' ',{ans:String(y),unit:b,exp},unitSpan(b)],
+    label:`${tot} ${b} = ${x} ${a} ${y} ${b}`, tip:()=>`<p>1 ${a} = ${f} ${b}. Wie viele ganze ${f} passen in ${tot}? Der Rest sind ${b}.</p>`};
+}
+const hmParts = B => { const h = Math.floor(B/3600), m = (B%3600)/60; return (h?`${h} ${unitSpan('h')} `:'') + (m||!h?`${m} ${unitSpan('min')}`:''); };
+function zSum(){
+  let B1 = ri(1,3)*3600 + ri(2,11)*300, B2 = ri(4,11)*300 + (Math.random()<.4?3600:0);
+  const plus = Math.random()<.6 || B2>=B1, R = plus ? B1+B2 : B1-B2, o = plus?'+':'−';
+  const m1 = B1/60, m2 = B2/60, rm = R/60, h = Math.floor(rm/60), m = rm%60;
+  const exp = `<p>Alles in Minuten: ${hm(B1)} = ${m1} min, ${hm(B2)} = ${m2} min</p><p>${m1} ${o} ${m2} = ${rm} min</p><p class="res">${rm} min : 60 = ${h} Rest ${m} → ${h} h ${m} min</p>`;
+  return {kind:'num', type:'Rechnen mit Zeit', q:'Rechne aus. Schreibe in Stunden und Minuten.',
+    parts:[hmParts(B1),` <span class="op">${o}</span> `,hmParts(B2),' = ',{ans:String(h),unit:'h',exp},unitSpan('h'),' ',{ans:String(m),unit:'min',exp},unitSpan('min')],
+    label:`${hm(B1)} ${o} ${hm(B2)} = ${h} h ${m} min`, tip:()=>'<p>Rechne alles in Minuten um. Am Schluss: durch 60 rechnen. Der Rest sind Minuten.</p>'};
+}
+function zError(){
+  const who = pick(NAMES), correct = Math.random()<.4;
+  if(Math.random()<.6){ // Komma-Falle bei Stunden
+    const w = ri(1,4), fr = pick([50,25,75,20,10,50]), m = fr*60/100;
+    const claim = correct ? `${w} h ${m} min` : `${w} h ${fr} min`;
+    return {kind:'mc', type:'Fehler finden', q:`${who} rechnet:`, line:`${hdec(w,fr)} h = ${claim}`, sent:'Stimmt das?', opts:['Stimmt','Stimmt nicht'], ans:correct?0:1,
+      exp:`${correct?'':`<p>${who} hat in die Falle getappt! Nach dem Komma stehen <b>keine Minuten</b>.</p>`}<p>${hdec(0,fr)} h = ${hdec(0,fr)} · 60 min = ${m} min</p><p class="res">${hdec(w,fr)} h = ${w} h ${m} min</p>`,
+      label:`${hdec(w,fr)} h = ${w} h ${m} min`};
+  }
+  const [a,b] = pick(ZP), n = ri(2,9), f = tFac(a,b), right = n*f, wrong = n*(a==='d'?pick([10,12,100]):100);
+  return {kind:'mc', type:'Fehler finden', q:`${who} rechnet:`, line:`${n} ${a} = ${nice(String(correct?right:wrong))} ${b}`, sent:'Stimmt das?', opts:['Stimmt','Stimmt nicht'], ans:correct?0:1,
+    exp:`${correct?'':`<p>${who} hat mit dem falschen Wert gerechnet.</p>`}<p><b>1 ${a} = ${f} ${b}</b></p><p class="res">${n} ${a} = ${n} · ${f} = ${nice(String(right))} ${b}</p>`, label:`${n} ${a} = ${nice(String(right))} ${b}`};
+}
+function zOrder(){
+  const w = ri(1,2), o1 = pick([15,30]), o2 = o1===15?25:50;
+  const [o3,o4] = shuffle([10,20,35,40,45,55].filter(x=>x!==o1&&x!==o2)).slice(0,2);
+  const items = shuffle([
+    {t:`${hdec(w,o1===15?25:50)} h`, B:(w*60+o1)*60, u:'h'},
+    {t:`${w} h ${o2} min`, B:(w*60+o2)*60, u:'hm'},
+    {t:`${w*60+o3} min`, B:(w*60+o3)*60, u:'min'},
+    {t:`${nice(String((w*60+o4)*60))} s`, B:(w*60+o4)*60, u:'s'}
+  ]);
+  const sorted = items.slice().sort((x,y)=>x.B-y.B);
+  return {kind:'order', type:'Ordnen', q:'Tippe die Zeiten der Reihe nach an: <b>von der kürzesten zur längsten</b>.', items,
+    exp:`<p>Alles in Minuten umrechnen, dann vergleichen:</p><p>${sorted.map(it=>`${it.t} = <b>${it.B/60} min</b>`).join('<br>')}</p>`, label:sorted.map(i=>i.t).join(' < ')};
+}
+function zTextTask(q, blanks, exp){
+  const parts = []; blanks.forEach((b,i)=>{ if(i) parts.push(' '); parts.push({ans:b[0],unit:b[1],exp}); parts.push(unitSpan(b[1])); });
+  return {kind:'num', type:'Textaufgabe', q, text:true, parts, label:q+' → '+blanks.map(b=>nice(b[0])+' '+b[1]).join(' '),
+    tip:()=>`<p>Rechne zuerst alles in die gleiche Einheit um. <b>${ZFACTS}</b></p>`};
+}
+const ZTEXT = [
+  ()=>{ let m; do{ m = ri(95,175); } while(m%60===0); const h=Math.floor(m/60), r=m%60;
+    return zTextTask(`Ein Film dauert ${m} min. Wie lange ist das in Stunden und Minuten?`, [[String(h),'h'],[String(r),'min']], `<p class="res">${m} min : 60 = ${h} Rest ${r} → ${h} h ${r} min</p>`); },
+  ()=>{ const t=pick([25,35,40,45,50]), tot=t*7, h=Math.floor(tot/60), r=tot%60;
+    return zTextTask(`Du trainierst jeden Tag ${t} min. Wie lange trainierst du in einer Woche? Schreibe in Stunden und Minuten.`, [[String(h),'h'],[String(r),'min']], `<p>${t} min · 7 = ${tot} min</p><p class="res">${tot} min : 60 = ${h} Rest ${r} → ${h} h ${r} min</p>`); },
+  ()=>{ const w=ri(8,20), tot=w*10, h=Math.floor(tot/60), r=tot%60;
+    return zTextTask(`Dein Schulweg dauert ${w} min. Du gehst ihn jeden Tag hin und zurück. Wie lange bist du in 5 Tagen unterwegs? Schreibe in Stunden und Minuten.`, [[String(h),'h'],[String(r),'min']], `<p>${w} min · 2 · 5 = ${tot} min</p><p class="res">${tot} min : 60 = ${h} Rest ${r} → ${h} h ${r} min</p>`); },
+  ()=>{ const [mm,ss] = pick([[3,20],[2,30],[4,15],[3,45]]), len = mm*60+ss; let n; do{ n = ri(4,20); } while((n*len)%60!==0);
+    return zTextTask(`Ein Lied dauert ${mm} min ${ss} s. Deine Playlist hat ${n} solche Lieder. Wie viele Minuten dauert die Playlist?`, [[String(n*len/60),'min']], `<p>${mm} min ${ss} s = ${len} s</p><p>${len} s · ${n} = ${nice(String(n*len))} s</p><p class="res">${nice(String(n*len))} s : 60 = ${n*len/60} min</p>`); },
+  ()=>{ const w=ri(1,5);
+    return zTextTask(`Die Ferien dauern ${w} ${w===1?'Woche':'Wochen'}. Wie viele Stunden sind das?`, [[String(w*168),'h']], `<p>${w} · 7 d = ${w*7} d</p><p class="res">${w*7} d · 24 = ${w*168} h</p>`); },
+  ()=>{ const w=ri(1,4), fr=pick([25,50,75]);
+    return zTextTask(`Eine Velotour dauert ${hdec(w,fr)} h. Wie viele Minuten sind das?`, [[String(w*60+fr*60/100),'min']], `<p>${w} h = ${w*60} min, 0.${fr===50?5:fr} h = ${fr*60/100} min</p><p class="res">${hdec(w,fr)} h = ${w*60+fr*60/100} min</p>`); },
+  ()=>{ let h, n, r; do{ h=pick([8,9,10]); n=ri(4,16); r=ratDec(h*n,24,2); } while(r===null);
+    return zTextTask(`Du schläfst jede Nacht ${h} h. Wie viele Tage (d) schläfst du in ${n} Nächten zusammen?`, [[r,'d']], `<p>${h} h · ${n} = ${h*n} h</p><p class="res">${h*n} h : 24 = ${nice(r)} d</p>`); }
+];
+function z5(){ return pick([zMixed,zMixed,zSum,zSum,zError,zOrder,zText])(); }
+function zText(){ return pick(ZTEXT)(); }
+
+// Wrapper: Zeit oder Dezimal-Masse, je nach Auswahl
+function withZ(gen, zgen){
+  return () => {
+    const decs = store.act.filter(x=>x!=='Z');
+    if(store.act.includes('Z') && (!decs.length || Math.random() < 1/store.act.length)) return zgen();
+    return gen();
+  };
+}
+const G1 = withZ(g1,z1), G2 = withZ(g2,z2), G3 = withZ(g3,z3), G4 = withZ(g4,z4), G5 = withZ(g5,z5);
+
+const LEVELS = [
+  {n:1, t:'Einheiten kennen',  d:'Welche Einheit passt? Wie gross ist der Schritt?', gen:G1, cnt:10,
+     goal:'Du lernst die Einheiten kennen: Welche passt? Wird die Zahl grösser oder kleiner?'},
+  {n:2, t:'Ganze Zahlen',      d:'4000 m = 4 km · 7 l = 70 dl', gen:G2, cnt:10,
+     goal:'Du rechnest ganze Zahlen in die Nachbar-Einheit um. Beispiel: 4000 m = 4 km'},
+  {n:3, t:'Mit Komma',         d:'4.6 cm = 46 mm · 85 mm = 8.5 cm', gen:G3, cnt:10,
+     goal:'Jetzt mit Komma. Achte darauf, wohin das Komma rutscht. Beispiel: 85 mm = 8.5 cm · Zeit: 1.5 h = 90 min'},
+  {n:4, t:'Grosse Sprünge',    d:'25.3 m = ? km = ? cm · 45 m = 0.045 km', gen:G4, cnt:10,
+     goal:'Du springst über mehrere Einheiten und füllst Ketten mit zwei Lücken. Beispiel: 45 m = 0.045 km'},
+  {n:5, t:'Profi',             d:'3 m 7 cm · Rechnen mit Einheiten · Ordnen · Fehler finden · Textaufgaben · bei Gewichten auch mg', gen:G5, cnt:10,
+     goal:'Schwierige Aufgaben: gemischte Angaben, Rechnen, Ordnen, Fehler finden und Textaufgaben. Bei den Gewichten kommt Milligramm (mg) dazu.'},
+  {n:'T', t:'Schlusstest',     d:'12 gemischte Aufgaben aus allen Stufen. Schaffst du 3 Sterne?', gen:null, cnt:12,
+     goal:'12 gemischte Aufgaben aus allen Stufen. Zeig, was du kannst!'}
+];
+function testQueue(){ return shuffle([G1,G1,G2,G2,G3,G3,G4,G4,G5,G5,G5,G5]).map(g=>({gen:g, task:g()})); }
+
+/* ---------- Startseite ---------- */
+function starsHTML(n){ return [0,1,2].map(i=>i<n?'<span class="s">★</span>':'★').join(''); }
+function renderHome(){
+  const fl = $('filter'); fl.querySelectorAll('.tog').forEach(x=>x.remove());
+  for(const s in SYS){
+    const b = document.createElement('button'); b.className = 'tog'+(store.act.includes(s)?' on':''); b.textContent = SYS[s].name;
+    b.onclick = () => { if(store.act.includes(s)){ if(store.act.length>1) store.act = store.act.filter(x=>x!==s); } else store.act.push(s); save(); renderHome(); };
+    fl.appendChild(b);
+  }
+  const m = $('mods'); m.innerHTML = '';
+  const lb = document.createElement('button'); lb.className = 'mod';
+  lb.innerHTML = '<span class="num learn">?</span><b>Verstehen</b><span class="stars"></span><small>Einheiten-Treppe, Vorsilben und Stellentafel-Labor. Hier beginnen!</small>';
+  lb.onclick = openLearn; m.appendChild(lb);
+  LEVELS.forEach((L,ix)=>{
+    const b = document.createElement('button'); b.className = 'mod';
+    const best = store.best[L.n]||0;
+    b.innerHTML = `<span class="num${L.n==='T'?' test':''}">${L.n==='T'?'★':L.n}</span><b>${L.n==='T'?'':'Stufe '+L.n+' – '}${L.t}</b><span class="stars">${starsHTML(best)}</span><small>${L.d}</small>`;
+    b.onclick = () => start(ix); m.appendChild(b);
+  });
+}
+function show(id){ ['setup','learn','play','result'].forEach(x=>$(x).hidden = x!==id); window.scrollTo(0,0); }
+
+/* ---------- Verstehen ---------- */
+let lab = {s:'L', from:'cm', to:'cm'};
+const LAB0 = {L:['cm','4.6'], H:['dl','2.5'], G:['kg','1.25'], Z:['h','1.5']};
+function setLab(s){ lab.s = s; lab.from = lab.to = LAB0[s][0]; if(s==='Z') $('zVal').value = LAB0[s][1]; else $('labVal').value = LAB0[s][1]; }
+function openLearn(){ setLab(store.act[0]); renderLearn(); show('learn'); }
+function renderLearn(){
+  const c = $('lsys'); c.innerHTML = '';
+  for(const s in SYS){
+    const b = document.createElement('button'); b.className = 'chip'+(lab.s===s?' on':''); b.textContent = SYS[s].name;
+    b.onclick = () => { setLab(s); renderLearn(); };
+    c.appendChild(b);
+  }
+  const Z = lab.s==='Z';
+  $('zeitLearn').hidden = !Z; $('decLearn').hidden = Z;
+  // Treppe
+  const us = Z ? TU : units(lab.s,true), n = us.length, W = 640, sw = (W-20)/n, top = 40, sh = 30;
+  let g = '';
+  us.forEach((u,i)=>{
+    const x = 10+i*sw, y = top+i*sh, h = 205-y;
+    g += `<rect class="st" x="${x}" y="${y}" width="${sw-4}" height="${h}" rx="8"/>`;
+    g += `<text x="${x+sw/2-2}" y="${y+30}" text-anchor="middle" font-size="26">${u}</text>`;
+    if(u==='mg') g += `<text x="${x+sw/2-2}" y="${y+52}" text-anchor="middle" font-size="14" style="fill:var(--up)">Profi</text>`;
+    if(i<n-1){
+      const f = nice(String(Z ? tFac(u,us[i+1]) : P10(E(u)-E(us[i+1])))), xm = x+sw-2;
+      g += `<text class="fu" x="${xm}" y="${y-8}" text-anchor="middle">↖ : ${f}</text>`;
+      g += `<text class="fd" x="${xm}" y="232" text-anchor="middle">· ${f} ↘</text>`;
+    }
+  });
+  g += `<text x="${W/2}" y="262" text-anchor="middle" font-size="15" style="font-weight:500;fill:var(--soft)">grösste Einheit  ←  →  kleinste Einheit</text>`;
+  $('treppe').innerHTML = g;
+  $('treppeHint').textContent = {
+    L:'Bei den Längen ist jede Stufe · 10. Nur von m zu km ist es ein grosser Sprung: · 1000.',
+    H:'Bei den Hohlmassen ist von l zu dl, cl, ml jede Stufe · 10. Von hl zu l ist es · 100.',
+    G:'Bei den Gewichten ist jede Stufe · 1000: 1 t = 1000 kg, 1 kg = 1000 g, 1 g = 1000 mg. Milligramm (mg) kommt erst bei Profi.',
+    Z:'Bei der Zeit sind die Stufen ungleich: · 24 und · 60. Darum kannst du hier nicht einfach das Komma verschieben.'
+  }[lab.s];
+  if(Z){ renderZeit(); return; }
+  // Labor
+  const lf = $('labFrom'); lf.innerHTML = '';
+  us.forEach(u=>{
+    const b = document.createElement('button'); b.className = 'chip'+(lab.from===u?' on':''); b.textContent = u;
+    b.onclick = () => { lab.from = u; lab.to = u; renderLearn(); };
+    lf.appendChild(b);
+  });
+  renderLab();
+}
+function renderLab(){
+  const v = norm($('labVal').value);
+  if(v===null){ $('labTafel').innerHTML = '<p class="tlegend">Bitte eine Zahl eingeben, z. B. 4.6</p>'; $('labAlle').innerHTML=''; return; }
+  $('labTafel').innerHTML = tafel(v, lab.from, lab.to);
+  const a = $('labAlle'); a.innerHTML = '';
+  units(lab.s,true).forEach(u=>{
+    const b = document.createElement('button'); b.className = lab.to===u?'on':'';
+    const k = E(lab.from)-E(u);
+    const hint = k===0 ? 'Ausgangszahl' : (k>0 ? `Komma ${stellen(k)} nach rechts` : `Komma ${stellen(-k)} nach links`);
+    b.innerHTML = `<span>${nice(v)} ${lab.from} = <b>${nice(conv(v,lab.from,u))} ${u}</b></span><small>${hint}</small>`;
+    b.onclick = () => { lab.to = u; renderLab(); };
+    a.appendChild(b);
+  });
+}
+$('labVal').addEventListener('input', renderLab);
+function renderZeit(){
+  const zf = $('zFrom'); zf.innerHTML = '';
+  TU.forEach(u=>{
+    const b = document.createElement('button'); b.className = 'chip'+(lab.from===u?' on':''); b.textContent = u;
+    b.onclick = () => { lab.from = u; renderZeit(); };
+    zf.appendChild(b);
+  });
+  const a = $('zAlle'); a.innerHTML = '';
+  const v = norm($('zVal').value);
+  if(v===null){ a.innerHTML = '<p class="tlegend">Bitte eine Zahl eingeben, z. B. 1.5</p>'; return; }
+  const k = dec(v), num = Number(v.replace('.',''))*TF[lab.from]; // Zeit in s · 10^k
+  TU.forEach(u=>{
+    let r = ratDec(num, TF[u]*P10(k), 4), txt;
+    txt = r!==null ? nice(r) : '≈ '+(num/(TF[u]*P10(k))).toFixed(2);
+    const row = document.createElement('div');
+    row.innerHTML = `<button${u===lab.from?' class="on"':''}><span>${nice(v)} ${lab.from} = <b>${txt} ${u}</b></span><small>${u===lab.from?'Ausgangszahl':''}</small></button>`;
+    a.appendChild(row.firstChild);
+  });
+  const sec = num/P10(k);
+  if(sec>=60 && Number.isInteger(sec)){
+    const d = Math.floor(sec/86400), h = Math.floor(sec%86400/3600), m = Math.floor(sec%3600/60), s2 = sec%60;
+    const parts = [d&&d+' d', h&&h+' h', m&&m+' min', s2&&s2+' s'].filter(Boolean).join(' ');
+    const row = document.createElement('div');
+    row.innerHTML = `<button class="on" style="border-color:var(--marker);box-shadow:none"><span>Gemischt: <b>${parts}</b></span><small>so liest man es</small></button>`;
+    a.appendChild(row.firstChild);
+  }
+}
+$('zVal').addEventListener('input', renderZeit);
+$('learnBack').onclick = () => { renderHome(); show('setup'); };
+$('learnGo').onclick = () => start(0);
+
+/* ---------- Üben ---------- */
+let G = null; // Spielzustand
+function start(ix){
+  const L = LEVELS[ix];
+  const queue = L.n==='T' ? testQueue() : Array.from({length:L.cnt}, ()=>({gen:L.gen, task:L.gen()}));
+  G = {ix, L, queue, pos:0, firstOk:0, total:L.cnt, extra:0, streak:0, wrongs:[]};
+  show('play'); showTask();
+}
+function status(){
+  $('status').innerHTML = (G.streak>=3?`<span class="streak">${G.streak} richtig in Folge! </span> · `:'') + `${Math.min(G.pos+1,G.queue.length)} / ${G.queue.length}`;
+  $('prog').style.width = (G.pos/G.queue.length*100)+'%';
+}
+function showTask(){
+  const it = G.queue[G.pos], T = it.task;
+  G.cur = {T, bi:0, input:'', wrong:false, done:false, order:[]};
+  const L = G.L;
+  $('lvl').innerHTML = `<span class="num${L.n==='T'?' test':''}">${L.n==='T'?'★':L.n}</span><span class="lt">${L.n==='T'?'Schlusstest':'Stufe '+L.n+': '+L.t}</span><span class="ld">${L.goal}</span>`
+    + `<span class="ls">${store.act.map(k=>`<span>${SYS[k].name}</span>`).join('')}</span>`;
+  $('fb').textContent = ''; $('fb').className = 'fb'; $('explain').innerHTML = ''; $('next').hidden = true;
+  $('tip').hidden = !T.tip; $('pad').hidden = T.kind!=='num';
+  status(); render();
+}
+function blanks(T){ return T.parts.filter(p=>typeof p==='object'); }
+function render(){
+  const C = G.cur, T = C.T; let h = T.type ? `<span class="ttype">${T.type}</span>` : '';
+  if(T.kind==='num'){
+    if(T.q) h += `<p class="question">${T.q}</p>`;
+    let bi = 0;
+    h += `<div class="line">` + T.parts.map(p=>{
+      if(typeof p==='string') return `<span>${p}</span>`;
+      const i = bi++;
+      if(i<C.bi || (i===C.bi && C.done)) return p.res==='bad' ? `<span class="answer bad"><span class="was">${p.given?nice(p.given):'–'}</span>${nice(p.ans)}</span>` : `<span class="answer ok">${nice(p.ans)}</span>`;
+      if(i===C.bi) return `<span class="answer">${C.input}</span>`;
+      return `<span class="answer wait">&nbsp;</span>`;
+    }).join('') + `</div>`;
+  } else if(T.kind==='mc'){
+    h += `<p class="question">${T.q}</p>`;
+    if(T.line) h += `<div class="line">${T.line}</div>`;
+    if(T.sent) h += `<p class="question" style="font-size:23px;font-weight:600">${T.sent}</p>`;
+    const cls = T.opts.length===2?'two':(T.opts.length===3?'three':'four');
+    h += `<div class="opts ${cls}">` + T.opts.map((o,i)=>`<button class="opt" data-i="${i}">${o}</button>`).join('') + `</div>`;
+  } else {
+    h += `<p class="question">${T.q}</p>`;
+    h += `<div class="ord">` + T.items.map((it,i)=>{ const p = C.order.indexOf(i); return `<button class="ordb${p>=0?' used':''}" data-i="${i}">${p>=0?`<span class="badge">${p+1}</span>`:''}${it.t}</button>`; }).join('') + `</div>`;
+    h += `<div class="slots" id="slots">` + C.order.map((i,k)=>`${k?'<span class="lt">&lt;</span>':''}<span class="${C.res?C.res[k]:''}">${T.items[i].t}</span>`).join('') + `</div>`;
+  }
+  $('stage').innerHTML = h;
+  if(T.kind==='mc') $('stage').querySelectorAll('.opt').forEach(b=>b.onclick=()=>answerMC(+b.dataset.i, b));
+  if(T.kind==='order') $('stage').querySelectorAll('.ordb').forEach(b=>b.onclick=()=>tapOrder(+b.dataset.i));
+}
+function blankExplain(p){ return p.exp || convExplain(p.v, p.from, p.unit); }
+function key(k){
+  const C = G && G.cur; if(!C || C.T.kind!=='num' || C.done || $('play').hidden) return;
+  if(k==='del') C.input = C.input.slice(0,-1);
+  else if(k==='ok'){ checkNum(); return; }
+  else if(k==='.'){ if(!C.input.includes('.') && C.input.length<10) C.input += (C.input===''?'0.':'.'); }
+  else if(C.input.length<10) C.input += k;
+  render();
+}
+function checkNum(){
+  const C = G.cur, bl = blanks(C.T), p = bl[C.bi];
+  const v = norm(C.input); if(v===null) return;
+  p.given = v;
+  if(v===norm(p.ans)){
+    p.res = 'ok';
+    if(C.bi<bl.length-1){ C.bi++; C.input=''; $('fb').textContent = 'Richtig! Und die nächste Lücke?'; $('fb').className='fb ok'; $('explain').innerHTML=''; render(); return; }
+    C.done = true; render(); finishTask(true);
+  } else {
+    p.res = 'bad'; C.wrong = true; C.done = true; render();
+    $('fb').textContent = 'Leider falsch. So geht es:'; $('fb').className = 'fb bad';
+    $('explain').innerHTML = blankExplain(p);
+    $('pad').hidden = true; $('tip').hidden = true; $('next').hidden = false;
+    G.afterWrong = C.bi<bl.length-1 ? 'blank' : 'end';
+  }
+}
+function answerMC(i, btn){
+  const C = G.cur; if(C.done) return; C.done = true;
+  const T = C.T, bs = $('stage').querySelectorAll('.opt');
+  bs[T.ans].classList.add('ok');
+  if(i===T.ans) finishTask(true);
+  else { btn.classList.add('bad'); C.wrong = true; finishTask(false); }
+}
+function tapOrder(i){
+  const C = G.cur; if(C.done) return;
+  const p = C.order.indexOf(i);
+  if(p>=0) C.order.splice(p); else C.order.push(i);
+  if(C.order.length===C.T.items.length){
+    C.done = true;
+    const sorted = C.T.items.map((x,k)=>k).sort((a,b)=>C.T.items[a].B-C.T.items[b].B);
+    C.res = C.order.map((x,k)=>x===sorted[k]?'ok':'bad');
+    const ok = C.res.every(r=>r==='ok');
+    if(!ok) C.wrong = true;
+    render(); finishTask(ok);
+  } else render();
+}
+const LOB = ['Richtig!','Super!','Genau!','Stark!','Perfekt!','Bravo!'];
+function finishTask(ok){
+  const C = G.cur;
+  $('tip').hidden = true; $('pad').hidden = true;
+  if(ok){
+    if(!C.wrong){ G.streak++; if(!G.queue[G.pos].retry) G.firstOk++; }
+    $('fb').textContent = pick(LOB); $('fb').className = 'fb ok';
+    status();
+    const id = G.pos; setTimeout(()=>{ if(G && G.pos===id) advance(); }, 900);
+  } else {
+    G.streak = 0;
+    $('fb').textContent = 'Leider falsch. So geht es:'; $('fb').className = 'fb bad';
+    $('explain').innerHTML = C.T.kind==='num' ? $('explain').innerHTML : C.T.exp;
+    $('next').hidden = false; G.afterWrong = 'end';
+    markWrong();
+  }
+}
+function markWrong(){
+  const it = G.queue[G.pos];
+  if(it.marked) return; it.marked = true;
+  if(!it.retry) G.wrongs.push(it.task.label);
+  if(G.extra<5){ G.extra++; G.queue.push({gen:it.gen, task:it.gen(), retry:true}); }
+  status();
+}
+$('next').onclick = () => {
+  if(!G || G.pos>=G.queue.length) return;
+  const C = G.cur;
+  if(G.afterWrong==='blank'){
+    markWrong(); G.streak = 0;
+    C.bi++; C.input=''; C.done=false;
+    $('next').hidden = true; $('explain').innerHTML=''; $('fb').textContent='Jetzt die nächste Lücke:'; $('fb').className='fb';
+    $('pad').hidden = false; render(); return;
+  }
+  if(C.T.kind==='num') markWrong();
+  advance();
+};
+function advance(){
+  G.pos++;
+  if(G.pos>=G.queue.length) return finish();
+  showTask();
+}
+$('tip').onclick = () => { const T = G.cur.T; if(T.tip){ $('explain').innerHTML = T.tip(); $('tip').hidden = true; } };
+$('pad').addEventListener('click', e=>{ const b = e.target.closest('.key'); if(b) key(b.dataset.k); });
+document.addEventListener('keydown', e=>{
+  if($('play').hidden) return;
+  if(/^[0-9]$/.test(e.key)) key(e.key);
+  else if(e.key==='.'||e.key===',') key('.');
+  else if(e.key==='Backspace'){ e.preventDefault(); key('del'); }
+  else if(e.key==='Enter'){
+    e.preventDefault();
+    if(!$('next').hidden) $('next').click(); else key('ok');
+  }
+});
+$('stop').onclick = () => { G = null; renderHome(); show('setup'); };
+
+/* ---------- Resultat ---------- */
+function finish(){
+  const pct = G.firstOk/G.total, st = pct>=.9?3:pct>=.7?2:pct>=.5?1:0;
+  const n = G.L.n; if(st>(store.best[n]||0)){ store.best[n] = st; save(); }
+  $('score').textContent = `${G.firstOk} / ${G.total}`;
+  $('bigstars').innerHTML = starsHTML(st);
+  $('msg').textContent = st===3 ? 'Ausgezeichnet! Du hast es verstanden.' : st===2 ? 'Gut gemacht! Noch ein bisschen üben, dann sitzt es.' : st===1 ? 'Ein guter Anfang. Übe diese Stufe nochmals.' : 'Schau dir „Verstehen“ nochmals an und versuche es dann wieder.';
+  $('mist').hidden = !G.wrongs.length;
+  $('mlist').innerHTML = G.wrongs.map(w=>`<li>${w}</li>`).join('');
+  const last = G.ix>=LEVELS.length-1;
+  $('nextLvl').hidden = last || st<2;
+  if(!last) $('nextLvl').textContent = G.ix===LEVELS.length-2 ? 'Zum Schlusstest' : 'Weiter zu Stufe '+LEVELS[G.ix+1].n;
+  show('result');
+}
+$('nextLvl').onclick = () => start(G.ix+1);
+$('again').onclick = () => start(G.ix);
+$('back').onclick = () => { renderHome(); show('setup'); };
+
+renderHome();
+})();
+</script>
+</body>
+</html>
